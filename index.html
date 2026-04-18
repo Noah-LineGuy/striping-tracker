@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Striping Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f4f6f9;color:#1a1a1a;padding:16px}
+h1{font-size:22px;font-weight:600;margin-bottom:16px;color:#1a1a1a}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.top-bar h1{margin:0}
+.btn-primary{background:#185FA5;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-primary:hover{background:#0C447C}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:#fff;border-radius:8px;padding:12px;text-align:center;border:1px solid #e0e0e0}
+.stat-num{font-size:26px;font-weight:600;color:#185FA5}
+.stat-label{font-size:12px;color:#666;margin-top:2px}
+.filter-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.ftab{padding:7px 14px;font-size:13px;color:#555;cursor:pointer;border-radius:8px;border:1px solid #ddd;background:#fff}
+.ftab.active{background:#185FA5;color:#fff;border-color:#185FA5}
+.project-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;margin-bottom:12px;overflow:hidden}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;gap:10px}
+.card-header:hover{background:#f9f9f9}
+.card-title{font-size:15px;font-weight:600;color:#1a1a1a}
+.card-sub{font-size:12px;color:#777;margin-top:2px}
+.badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.badge-active{background:#dbeafe;color:#1d4ed8}
+.badge-pending{background:#fef3c7;color:#92400e}
+.badge-done{background:#dcfce7;color:#166534}
+.badge-quoted{background:#ede9fe;color:#5b21b6}
+.chevron{font-size:11px;color:#aaa;transition:transform 0.2s;flex-shrink:0}
+.chevron.open{transform:rotate(90deg)}
+.card-body{border-top:1px solid #e0e0e0;padding:16px;display:none}
+.card-body.open{display:block}
+.inner-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.itab{padding:6px 12px;font-size:13px;color:#555;cursor:pointer;border-radius:8px;border:1px solid #ddd;background:#fff}
+.itab.active{background:#185FA5;color:#fff;border-color:#185FA5}
+.section{display:none}.section.active{display:block}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.info-field label{font-size:11px;color:#888;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px}
+.info-field p{font-size:14px;color:#1a1a1a}
+.info-field select{font-size:13px;padding:5px 8px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#1a1a1a;width:100%}
+.notes-box{background:#f9f9f9;border-radius:8px;padding:10px 12px;font-size:14px;color:#333;margin-top:4px;line-height:1.5}
+.update-item{display:flex;gap:10px;margin-bottom:12px}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.av-blue{background:#bfdbfe;color:#1e40af}
+.av-teal{background:#99f6e4;color:#0f766e}
+.bubble{background:#f3f4f6;border-radius:10px;padding:10px 12px;flex:1}
+.bubble-meta{font-size:11px;color:#999;margin-bottom:3px}
+.bubble-text{font-size:13px;color:#1a1a1a;line-height:1.5}
+.todo-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0}
+.todo-item:last-child{border-bottom:none}
+.todo-item input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:#185FA5}
+.todo-label{font-size:14px;color:#1a1a1a;flex:1;line-height:1.4}
+.todo-label.done{text-decoration:line-through;color:#aaa}
+.who-badge{font-size:11px;color:#555;background:#f0f0f0;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.add-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.add-row input,.add-row select{flex:1;min-width:120px;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#1a1a1a}
+.add-row button{font-size:13px;padding:8px 14px;white-space:nowrap}
+.update-compose{display:flex;gap:8px;margin-top:12px}
+.update-compose textarea{flex:1;font-size:13px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;resize:none;background:#fff;color:#1a1a1a;font-family:Arial,sans-serif}
+.update-compose .compose-right{display:flex;flex-direction:column;gap:6px}
+.update-compose select{font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#1a1a1a}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;padding:24px;width:100%;max-width:460px;margin:1rem;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:17px;font-weight:600;margin-bottom:18px;color:#1a1a1a}
+.form-row{margin-bottom:13px}
+.form-row label{font-size:12px;color:#666;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px}
+.form-row input,.form-row select,.form-row textarea{width:100%;font-size:14px;padding:9px 11px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#1a1a1a;font-family:Arial,sans-serif}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.btn-ghost{background:#fff;border:1px solid #ddd;color:#333;border-radius:8px;padding:9px 16px;font-size:14px;cursor:pointer}
+.btn-ghost:hover{background:#f5f5f5}
+.empty{font-size:13px;color:#aaa;text-align:center;padding:20px 0}
+.loading{font-size:14px;color:#888;text-align:center;padding:30px 0}
+.delete-btn{background:none;border:none;color:#ccc;font-size:16px;cursor:pointer;padding:4px;border-radius:4px;flex-shrink:0}
+.delete-btn:hover{color:#e74c3c}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>Striping Jobs</h1>
+  <button class="btn-primary" onclick="openModal()">+ New Project</button>
+</div>
+
+<div class="stats" id="stats"><div class="loading">Loading...</div></div>
+
+<div class="filter-tabs">
+  <div class="ftab active" onclick="filterTab(this,'all')">All Jobs</div>
+  <div class="ftab" onclick="filterTab(this,'active')">Active</div>
+  <div class="ftab" onclick="filterTab(this,'pending')">Pending</div>
+  <div class="ftab" onclick="filterTab(this,'quoted')">Quoted</div>
+  <div class="ftab" onclick="filterTab(this,'done')">Completed</div>
+</div>
+
+<div id="project-list"><div class="loading">Loading projects...</div></div>
+
+<!-- New Project Modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3>Add New Project</h3>
+    <div class="form-row"><label>Client / Location Name</label><input id="f-name" placeholder="e.g. Walmart on Main St" /></div>
+    <div class="form-row"><label>Address</label><input id="f-addr" placeholder="123 Main St, Williston ND" /></div>
+    <div class="form-row"><label>Scheduled Date</label><input id="f-date" type="date" /></div>
+    <div class="form-row"><label>Assigned To</label>
+      <select id="f-assign"><option>Both</option><option>Noah</option><option>Partner</option></select>
+    </div>
+    <div class="form-row"><label>Status</label>
+      <select id="f-status">
+        <option value="quoted">Quoted</option>
+        <option value="pending">Pending</option>
+        <option value="active">Active</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Notes</label>
+      <textarea id="f-notes" rows="3" placeholder="Scope, square footage, special requests..."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="addProject()">Add Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ── Firebase config ──────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyBhdH9wFuhkeRZRRPJG5ojO9kWetZA4ye8",
+  authDomain: "striping-tracker-db75b.firebaseapp.com",
+  projectId: "striping-tracker-db75b",
+  storageBucket: "striping-tracker-db75b.firebasestorage.app",
+  messagingSenderId: "533884000391",
+  appId: "1:533884000391:web:d08255ffb924b40e7dc022"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ── State ────────────────────────────────────────────────────
+let projects = [];
+let filter = "all";
+
+// ── Real-time listener ───────────────────────────────────────
+db.collection("projects").orderBy("createdAt","desc").onSnapshot(snapshot => {
+  projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  renderStats();
+  renderProjects();
+});
+
+// ── Helpers ──────────────────────────────────────────────────
+function fmt(d) {
+  if (!d) return "";
+  const [y,m,day] = d.split("-");
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${months[+m-1]} ${+day}, ${y}`;
+}
+function nowStamp() {
+  const n = new Date();
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${months[n.getMonth()]} ${n.getDate()}`;
+}
+
+// ── Stats ────────────────────────────────────────────────────
+function renderStats() {
+  const total = projects.length;
+  const active = projects.filter(p => p.status === "active").length;
+  const done = projects.filter(p => p.status === "done").length;
+  const pending = projects.filter(p => p.status === "pending" || p.status === "quoted").length;
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><div class="stat-num">${total}</div><div class="stat-label">Total Jobs</div></div>
+    <div class="stat"><div class="stat-num">${active}</div><div class="stat-label">Active</div></div>
+    <div class="stat"><div class="stat-num">${pending}</div><div class="stat-label">Pending</div></div>
+    <div class="stat"><div class="stat-num">${done}</div><div class="stat-label">Completed</div></div>`;
+}
+
+// ── Project list ─────────────────────────────────────────────
+function renderProjects() {
+  const list = document.getElementById("project-list");
+  const shown = filter === "all" ? projects : projects.filter(p => p.status === filter);
+  if (!shown.length) { list.innerHTML = `<div class="empty">No projects in this view.</div>`; return; }
+  list.innerHTML = shown.map(p => {
+    const blabel = {active:"Active",pending:"Pending",done:"Completed",quoted:"Quoted"}[p.status];
+    const updates = p.updates || [];
+    const todos = p.todos || [];
+    const remaining = todos.filter(t => !t.done).length;
+    return `<div class="project-card" id="card-${p.id}">
+      <div class="card-header" onclick="toggleCard('${p.id}')">
+        <div style="flex:1;min-width:0">
+          <div class="card-title">${p.name}</div>
+          <div class="card-sub">${p.addr || ""}${p.date ? " · " + fmt(p.date) : ""} · ${p.assign || ""}</div>
+        </div>
+        <span class="badge badge-${p.status}">${blabel}</span>
+        <button class="delete-btn" onclick="event.stopPropagation();deleteProject('${p.id}')" title="Delete project">&#10005;</button>
+        <span class="chevron" id="chev-${p.id}">&#9654;</span>
+      </div>
+      <div class="card-body" id="body-${p.id}">
+        <div class="inner-tabs">
+          <div class="itab active" onclick="switchInnerTab('${p.id}',this,'info')">Info</div>
+          <div class="itab" onclick="switchInnerTab('${p.id}',this,'updates')">Updates (${updates.length})</div>
+          <div class="itab" onclick="switchInnerTab('${p.id}',this,'todos')">To-Do (${remaining} left)</div>
+        </div>
+        <div class="section active" id="sec-${p.id}-info">${renderInfo(p)}</div>
+        <div class="section" id="sec-${p.id}-updates">${renderUpdates(p)}</div>
+        <div class="section" id="sec-${p.id}-todos">${renderTodos(p)}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderInfo(p) {
+  return `<div class="info-grid">
+    <div class="info-field"><label>Status</label>
+      <select onchange="changeStatus('${p.id}',this.value)">
+        <option value="quoted"${p.status==="quoted"?" selected":""}>Quoted</option>
+        <option value="pending"${p.status==="pending"?" selected":""}>Pending</option>
+        <option value="active"${p.status==="active"?" selected":""}>Active</option>
+        <option value="done"${p.status==="done"?" selected":""}>Completed</option>
+      </select>
+    </div>
+    <div class="info-field"><label>Assigned To</label><p>${p.assign || "—"}</p></div>
+    <div class="info-field"><label>Date</label><p>${fmt(p.date) || "—"}</p></div>
+    <div class="info-field"><label>Address</label><p>${p.addr || "—"}</p></div>
+  </div>
+  ${p.notes ? `<div><div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px">Notes</div><div class="notes-box">${p.notes}</div></div>` : ""}`;
+}
+
+function renderUpdates(p) {
+  const updates = p.updates || [];
+  const html = updates.length
+    ? updates.map(u => {
+        const isNoah = u.who === "Noah";
+        return `<div class="update-item">
+          <div class="avatar ${isNoah ? "av-blue" : "av-teal"}">${isNoah ? "NO" : "PR"}</div>
+          <div class="bubble">
+            <div class="bubble-meta">${u.who} · ${u.time}</div>
+            <div class="bubble-text">${u.text}</div>
+          </div>
+        </div>`;
+      }).join("")
+    : `<div class="empty">No updates yet.</div>`;
+  return `<div id="updates-inner-${p.id}">${html}</div>
+    <div class="update-compose">
+      <textarea id="ut-${p.id}" rows="2" placeholder="Add an update..."></textarea>
+      <div class="compose-right">
+        <select id="us-${p.id}"><option>Noah</option><option>Partner</option></select>
+        <button class="btn-primary" style="font-size:12px;padding:7px 12px" onclick="addUpdate('${p.id}')">Post</button>
+      </div>
+    </div>`;
+}
+
+function renderTodos(p) {
+  const todos = p.todos || [];
+  const html = todos.length
+    ? todos.map((t,i) => `<div class="todo-item">
+        <input type="checkbox"${t.done?" checked":""} onchange="toggleTodo('${p.id}',${i},this.checked)" />
+        <span class="todo-label${t.done?" done":""}">${t.text}</span>
+        <span class="who-badge">${t.who}</span>
+      </div>`).join("")
+    : `<div class="empty">No tasks yet.</div>`;
+  return `<div id="todos-inner-${p.id}">${html}</div>
+    <div class="add-row">
+      <input id="tt-${p.id}" placeholder="New task..." />
+      <select id="tw-${p.id}"><option>Noah</option><option>Partner</option><option>Both</option></select>
+      <button class="btn-primary" onclick="addTodo('${p.id}')">Add</button>
+    </div>`;
+}
+
+// ── Toggle card open/close ───────────────────────────────────
+function toggleCard(id) {
+  document.getElementById(`body-${id}`).classList.toggle("open");
+  document.getElementById(`chev-${id}`).classList.toggle("open");
+}
+
+function switchInnerTab(id, el, sec) {
+  el.parentElement.querySelectorAll(".itab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  ["info","updates","todos"].forEach(s => {
+    const d = document.getElementById(`sec-${id}-${s}`);
+    if (d) d.classList.toggle("active", s === sec);
+  });
+}
+
+// ── Firestore actions ────────────────────────────────────────
+function changeStatus(id, val) {
+  db.collection("projects").doc(id).update({ status: val });
+}
+
+function addUpdate(id) {
+  const ta = document.getElementById(`ut-${id}`);
+  const sel = document.getElementById(`us-${id}`);
+  const text = ta.value.trim();
+  if (!text) return;
+  const p = projects.find(x => x.id === id);
+  const updates = [...(p.updates || []), { who: sel.value, time: nowStamp(), text }];
+  db.collection("projects").doc(id).update({ updates });
+  ta.value = "";
+}
+
+function addTodo(id) {
+  const inp = document.getElementById(`tt-${id}`);
+  const sel = document.getElementById(`tw-${id}`);
+  const text = inp.value.trim();
+  if (!text) return;
+  const p = projects.find(x => x.id === id);
+  const todos = [...(p.todos || []), { text, done: false, who: sel.value }];
+  db.collection("projects").doc(id).update({ todos });
+  inp.value = "";
+}
+
+function toggleTodo(id, idx, checked) {
+  const p = projects.find(x => x.id === id);
+  const todos = [...(p.todos || [])];
+  todos[idx] = { ...todos[idx], done: checked };
+  db.collection("projects").doc(id).update({ todos });
+}
+
+function deleteProject(id) {
+  if (confirm("Delete this project? This cannot be undone.")) {
+    db.collection("projects").doc(id).delete();
+  }
+}
+
+// ── Add project modal ────────────────────────────────────────
+function openModal() { document.getElementById("modal").classList.add("open"); }
+function closeModal() { document.getElementById("modal").classList.remove("open"); }
+
+function addProject() {
+  const name = document.getElementById("f-name").value.trim();
+  if (!name) { alert("Please enter a project name."); return; }
+  db.collection("projects").add({
+    name,
+    addr: document.getElementById("f-addr").value.trim(),
+    date: document.getElementById("f-date").value,
+    assign: document.getElementById("f-assign").value,
+    status: document.getElementById("f-status").value,
+    notes: document.getElementById("f-notes").value.trim(),
+    updates: [],
+    todos: [],
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  ["f-name","f-addr","f-date","f-notes"].forEach(id => document.getElementById(id).value = "");
+  closeModal();
+}
+
+// ── Filter tabs ──────────────────────────────────────────────
+function filterTab(el, f) {
+  document.querySelectorAll(".ftab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  filter = f;
+  renderProjects();
+}
+</script>
+</body>
+</html>
