@@ -261,12 +261,10 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111}
 
     <!-- DOCS -->
     <div class="screen" id="screen-docs">
-      <div class="doc-btn"><div class="doc-icon">&#128196;</div><div><div class="doc-name">IRS Form W-9</div><div class="doc-meta">Tax · Updated Jan 2026</div></div><span class="menu-arr">&#9654;</span></div>
-      <div class="doc-btn"><div class="doc-icon">&#128081;</div><div><div class="doc-name">Trademark certificate</div><div class="doc-meta">Legal · The Line Guys ND</div></div><span class="menu-arr">&#9654;</span></div>
-      <div class="doc-btn"><div class="doc-icon">&#128196;</div><div><div class="doc-name">Business license</div><div class="doc-meta">Legal · Expires Dec 2026</div></div><span class="menu-arr">&#9654;</span></div>
-      <div class="doc-btn"><div class="doc-icon">&#128200;</div><div><div class="doc-name">Insurance certificate</div><div class="doc-meta">Insurance · Active</div></div><span class="menu-arr">&#9654;</span></div>
-      <div class="doc-btn"><div class="doc-icon">&#128196;</div><div><div class="doc-name">Standard contract template</div><div class="doc-meta">Operations</div></div><span class="menu-arr">&#9654;</span></div>
-      <button class="ghost-btn">+ Upload new document</button>
+      <div id="docs-list"><div class="loading">Loading docs...</div></div>
+      <input type="file" id="doc-file-input" style="display:none" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onchange="uploadDoc(this)"/>
+      <button class="ghost-btn" style="margin-top:4px" onclick="document.getElementById('doc-file-input').click()">+ Upload new document</button>
+      <div id="doc-upload-status" style="font-size:12px;color:#888;text-align:center;padding:8px 0;display:none"></div>
     </div>
 
   </div>
@@ -362,6 +360,7 @@ function tabNav(el,screen,title){
   document.getElementById('nav-back').style.display='none';
   navStack=[];
   if(screen==='jobs')renderJobList();
+  if(screen==='docs')renderDocs();
 }
 function goBack(){
   navStack.pop();
@@ -428,13 +427,16 @@ function renderJobList(){
   if(!shown.length){el.innerHTML='<div class="empty">No '+(activeFilter==='all'?'jobs':activeFilter+' jobs')+' yet.</div>';return;}
   const statusLabel={active:'Active',pending:'Pending',quoted:'Quoted',done:'Completed'};
   el.innerHTML=shown.map(j=>`
-    <div class="job-card" onclick="openDetail('${j.id}')">
+    <div class="job-card" data-jobid="${j.id}">
       <div class="job-row">
         <span class="job-name">${j.name}</span>
         <span class="badge badge-${j.status}">${statusLabel[j.status]||j.status}</span>
       </div>
       <div class="job-meta">${j.addr||''}${j.date?' · '+fmtDate(j.date):''}${j.assign?' · '+j.assign:''}</div>
     </div>`).join('');
+  document.querySelectorAll('.job-card').forEach(card=>{
+    card.addEventListener('click',()=>openDetail(card.dataset.jobid));
+  });
 }
 
 function openDetail(id){
@@ -479,6 +481,7 @@ function renderDetail(){
         ${j.stencils?`<div class="drow"><span class="dlabel">Stencils</span><span class="dval">${j.stencils}</span></div>`:''}
         ${j.equip?`<div class="drow"><span class="dlabel">Special equip.</span><span class="dval">${j.equip}</span></div>`:''}
         ${j.notes?`<div style="margin-top:12px"><div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">Notes</div><div style="font-size:14px;color:#111;line-height:1.6;background:#f9f9f9;border-radius:8px;padding:10px">${j.notes}</div></div>`:''}
+        <button id="delete-job-btn" style="width:100%;margin-top:14px;padding:10px;border-radius:8px;border:1px solid #ffcccc;background:#fff5f5;color:#c0392b;font-size:13px;font-weight:700;cursor:pointer">Delete this job</button>
       </div>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -492,9 +495,9 @@ function renderDetail(){
               <a href="${f.url}" target="_blank" style="font-size:11px;color:#ffc60b;font-weight:700;text-decoration:none">View in Drive</a>
             </div>
           </div>`).join(''):'<div class="empty">No files uploaded yet.</div>'}
-        <div id="gdrive-status-${j.id}" class="gdrive-status" style="display:none"></div>
-        <input type="file" id="file-input-${j.id}" style="display:none" accept="image/*,.pdf,.doc,.docx" onchange="uploadFile(this,'${j.id}','${j.name}')"/>
-        <button class="ghost-btn" style="margin-top:8px;font-size:13px;padding:9px" onclick="triggerUpload('${j.id}')">+ Upload photo or file</button>
+        <div id="gdrive-status-area" class="gdrive-status" style="display:none"></div>
+        <input type="file" id="file-input-area" style="display:none" accept="image/*,.pdf,.doc,.docx"/>
+        <button id="upload-file-btn" class="ghost-btn" style="margin-top:8px;font-size:13px;padding:9px">+ Upload photo or file</button>
       </div>
     </div>
 
@@ -555,6 +558,9 @@ function renderDetail(){
       </div>
     </div>
   `;
+  document.getElementById('delete-job-btn').addEventListener('click',()=>deleteJob(activeJobId));
+  document.getElementById('upload-file-btn').addEventListener('click',()=>document.getElementById('file-input-area').click());
+  document.getElementById('file-input-area').addEventListener('change',function(){uploadFile(this,activeJobId,j.name);});
 }
 
 function buildPaintHTML(j){
@@ -648,6 +654,67 @@ function switchTabByName(name){
 }
 function ck(cb){cb.nextElementSibling.classList.toggle('done',cb.checked);}
 function resetCL(){document.querySelectorAll('#screen-checklist input[type=checkbox]').forEach(cb=>{cb.checked=false;if(cb.nextElementSibling)cb.nextElementSibling.classList.remove('done');});}
+function deleteJob(id){
+  if(!confirm('Delete this job? This cannot be undone.'))return;
+  db.collection("projects").doc(id).delete();
+  goBack();
+}
+function renderDocs(){
+  const el=document.getElementById('docs-list');
+  if(!el)return;
+  db.collection("business-docs").orderBy("createdAt","desc").get().then(snap=>{
+    if(snap.empty){el.innerHTML='<div class="empty">No documents yet. Upload one below.</div>';return;}
+    el.innerHTML=snap.docs.map(d=>{
+      const doc=d.data();
+      const isImg=doc.type&&doc.type.startsWith('image');
+      return `<div class="doc-btn" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+          <div class="doc-icon">${isImg?'&#128247;':'&#128196;'}</div>
+          <div style="min-width:0">
+            <div class="doc-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${doc.name}</div>
+            <div class="doc-meta">${doc.uploaded||''}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+          <a href="${doc.url}" target="_blank" style="font-size:12px;color:#ffc60b;font-weight:700;text-decoration:none">View</a>
+          <button onclick="deleteDoc('${d.id}')" style="background:none;border:none;color:#ccc;font-size:16px;cursor:pointer">&#10005;</button>
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+function deleteDoc(id){
+  if(!confirm('Delete this document?'))return;
+  db.collection("business-docs").doc(id).delete().then(()=>renderDocs());
+}
+async function uploadDoc(input){
+  const file=input.files[0];if(!file)return;
+  const statusEl=document.getElementById('doc-upload-status');
+  statusEl.style.display='block';statusEl.textContent='Signing in to Google Drive...';
+  try{
+    const token=await getGDriveToken();
+    statusEl.textContent='Uploading '+file.name+'...';
+    const rootId=await getOrCreateFolder(token,'Line Guys Business Docs',null);
+    const meta={name:file.name,parents:[rootId]};
+    const form=new FormData();
+    form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
+    form.append('file',file);
+    const upload=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,mimeType',{method:'POST',headers:{Authorization:'Bearer '+token},body:form});
+    const result=await upload.json();
+    await fetch(`https://www.googleapis.com/drive/v3/files/${result.id}/permissions`,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})});
+    const now=new Date();
+    const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    await db.collection("business-docs").add({name:result.name,url:result.webViewLink,type:result.mimeType,driveId:result.id,uploaded:mo[now.getMonth()]+' '+now.getDate()+', '+now.getFullYear(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    statusEl.textContent='Uploaded successfully!';
+    setTimeout(()=>{statusEl.style.display='none';},2000);
+    input.value='';
+    renderDocs();
+  }catch(err){
+    console.error(err);
+    statusEl.textContent='Upload failed. Please try again.';
+    setTimeout(()=>{statusEl.style.display='none';},3000);
+  }
+}
 </script>
 
 <!-- Firebase -->
@@ -795,12 +862,11 @@ function triggerUpload(jobId){
 async function uploadFile(input,jobId,jobName){
   const file=input.files[0];
   if(!file)return;
-  const statusEl=document.getElementById('gdrive-status-'+jobId);
-  statusEl.style.display='block';
-  statusEl.textContent='Signing in to Google Drive...';
+  const statusEl=document.getElementById('gdrive-status-area');
+  if(statusEl){statusEl.style.display='block';statusEl.textContent='Signing in to Google Drive...';}
   try{
     const token=await getGDriveToken();
-    statusEl.textContent='Uploading '+file.name+'...';
+    if(statusEl)statusEl.textContent='Uploading '+file.name+'...';
     const rootId=await getOrCreateFolder(token,'Line Guys Jobs',null);
     const jobFolderId=await getOrCreateFolder(token,jobName,rootId);
     const meta={name:file.name,parents:[jobFolderId]};
@@ -813,13 +879,11 @@ async function uploadFile(input,jobId,jobName){
     const j=jobs.find(x=>x.id===jobId);
     const files=[...(j.files||[]),{name:result.name,url:result.webViewLink,type:result.mimeType,driveId:result.id}];
     await db.collection("projects").doc(jobId).update({files});
-    statusEl.textContent='Uploaded successfully!';
-    setTimeout(()=>{statusEl.style.display='none';},2000);
+    if(statusEl){statusEl.textContent='Uploaded successfully!';setTimeout(()=>{statusEl.style.display='none';},2000);}
     input.value='';
   }catch(err){
     console.error(err);
-    statusEl.textContent='Upload failed. Please try again.';
-    setTimeout(()=>{statusEl.style.display='none';},3000);
+    if(statusEl){statusEl.textContent='Upload failed. Please try again.';setTimeout(()=>{statusEl.style.display='none';},3000);}
   }
 }
 </script>
