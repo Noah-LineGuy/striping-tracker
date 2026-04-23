@@ -116,6 +116,10 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
 .pir{display:flex;align-items:center;gap:6px}
 .pir .pd{width:14px;height:14px}
 .pir input{flex:1;font-size:13px;padding:7px 8px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif}
+.person-btn{flex:1;padding:10px;border-radius:10px;border:1px solid #ddd;background:#fff;color:#555;font-size:15px;font-weight:700;cursor:pointer}
+.person-btn.active{background:#ffc60b;color:#111;border-color:#ffc60b}
+.task-job-header{font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid #ffc60b}
+.task-job-header:first-child{margin-top:0}
 </style>
 </head>
 <body>
@@ -199,6 +203,13 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
         <button class="addbtn" style="margin-bottom:0" id="save-edit-btn">Save changes</button>
       </div>
     </div>
+    <div class="screen" id="s-tasks">
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="person-btn active" id="pb-noah" onclick="selectPerson(this,'Noah')">Noah</button>
+        <button class="person-btn" id="pb-terry" onclick="selectPerson(this,'Terry')">Terry</button>
+      </div>
+      <div id="tasks-list"><div class="empty">Select a person above to see their tasks.</div></div>
+    </div>
     <div class="screen" id="s-checklist">
       <div class="card">
         <div class="slbl" style="margin-top:0">Paint &amp; materials</div>
@@ -224,7 +235,8 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
   <div class="tabbar">
     <div class="titem active" id="t-home" onclick="tabTo(this,'home','THE LINE GUYS')">&#127968; Home</div>
     <div class="titem" id="t-jobs" onclick="tabTo(this,'jobs','Jobs')">&#128203; Jobs</div>
-    <div class="titem" id="t-checklist" onclick="tabTo(this,'checklist','Checklist')">&#9989; Checklist</div>
+    <div class="titem" id="t-tasks" onclick="tabTo(this,'tasks','Tasks')">&#9989; Tasks</div>
+    <div class="titem" id="t-checklist" onclick="tabTo(this,'checklist','Checklist')">&#9744; Checklist</div>
   </div>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -240,14 +252,14 @@ db.collection("projects").orderBy("createdAt","desc").onSnapshot(snap=>{
   jobs=snap.docs.map(d=>({id:d.id,...d.data()}));
   updateStats();
   if(document.getElementById('s-jobs').classList.contains('active'))renderJobs();
-  if(document.getElementById('s-detail').classList.contains('active')&&activeJobId)renderDetail();
+  if(document.getElementById('s-detail').classList.contains('active')&&activeJobId)renderDetail();if(document.getElementById('s-tasks').classList.contains('active'))renderTasks();
 });
 function toggleEdit(w){const b=document.getElementById('edit-'+w),o=w==='bank'?'bids':'bank';document.getElementById('edit-'+o).style.display='none';b.style.display=b.style.display==='block'?'none':'block';}
 function saveMoney(w){const v=parseFloat(document.getElementById('inp-'+w).value.replace(/[^0-9.]/g,''));if(isNaN(v))return;document.getElementById(w+'-disp').textContent=fmt(v);document.getElementById('edit-'+w).style.display='none';document.getElementById('inp-'+w).value='';}
 function updateStats(){const a=jobs.filter(j=>j.status==='active').length,p=jobs.filter(j=>j.status==='pending').length,q=jobs.filter(j=>j.status==='quoted').length;document.getElementById('h-active').textContent=a;document.getElementById('h-pending').textContent=p;document.getElementById('h-quoted').textContent=q;document.getElementById('jobs-sub').textContent=a+' active · '+p+' pending';const bids=jobs.filter(j=>j.status==='quoted').reduce((s,j)=>s+(j.value||0),0);document.getElementById('bids-disp').textContent=fmt(bids);}
 function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-'+s).classList.add('active');}
 function goTo(s,t){showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='block';navStack.push({s,t});if(s==='jobs')renderJobs();}
-function tabTo(el,s,t){document.querySelectorAll('.titem').forEach(x=>x.classList.remove('active'));el.classList.add('active');showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='none';navStack=[];if(s==='jobs')renderJobs();}
+function tabTo(el,s,t){document.querySelectorAll('.titem').forEach(x=>x.classList.remove('active'));el.classList.add('active');showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='none';navStack=[];if(s==='jobs')renderJobs();if(s==='tasks')renderTasks();}
 function goBack(){navStack.pop();if(!navStack.length){showScreen('home');document.getElementById('nav-title').textContent='THE LINE GUYS';document.getElementById('nav-back').style.display='none';document.querySelectorAll('.titem').forEach(x=>x.classList.remove('active'));document.getElementById('t-home').classList.add('active');}else{const p=navStack[navStack.length-1];showScreen(p.s);document.getElementById('nav-title').textContent=p.t;if(p.s==='jobs')renderJobs();}}
 function setFilter(el,f){activeFilter=f;document.querySelectorAll('.srtbtn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderJobs();}
 function renderJobs(){
@@ -364,6 +376,42 @@ document.getElementById('save-edit-btn').addEventListener('click',()=>{
     notes:document.getElementById('ej-notes').value.trim()
   }).then(()=>goBack());
 });
+let activePerson='Noah';
+function selectPerson(el,person){
+  activePerson=person;
+  document.querySelectorAll('.person-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderTasks();
+}
+function renderTasks(){
+  const el=document.getElementById('tasks-list');
+  if(!el)return;
+  const relevant=jobs.filter(j=>(j.todos||[]).some(t=>t.who===activePerson||t.who==='Both'));
+  if(!relevant.length){el.innerHTML='<div class="empty">No tasks for '+activePerson+' yet.</div>';return;}
+  let html='';
+  relevant.forEach(j=>{
+    const myTodos=(j.todos||[]).filter(t=>t.who===activePerson||t.who==='Both');
+    if(!myTodos.length)return;
+    html+='<div class="task-job-header">'+j.name+'</div>';
+    myTodos.forEach((t,i)=>{
+      const realIdx=(j.todos||[]).indexOf(t);
+      html+='<div class="crow2"><input type="checkbox"'+(t.done?' checked':'')+' data-jid="'+j.id+'" data-i="'+realIdx+'" class="task-cb"/><label class="clbl'+(t.done?' done':'')+'">'+t.text+'</label><span class="ccat">'+t.who+'</span></div>';
+    });
+  });
+  if(!html)html='<div class="empty">No tasks for '+activePerson+' yet.</div>';
+  el.innerHTML=html;
+  el.querySelectorAll('.task-cb').forEach(cb=>{
+    cb.addEventListener('change',()=>{
+      const jid=cb.getAttribute('data-jid');
+      const idx=parseInt(cb.getAttribute('data-i'));
+      const j=jobs.find(x=>x.id===jid);
+      if(!j)return;
+      const todos=[...(j.todos||[])];
+      todos[idx]={...todos[idx],done:cb.checked};
+      db.collection("projects").doc(jid).update({todos}).then(()=>renderTasks());
+    });
+  });
+}
 function ck(cb){cb.nextElementSibling.classList.toggle('done',cb.checked);}
 function resetCL(){document.querySelectorAll('#s-checklist input[type=checkbox]').forEach(cb=>{cb.checked=false;if(cb.nextElementSibling)cb.nextElementSibling.classList.remove('done');});}
 </script>
