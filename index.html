@@ -20,9 +20,9 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
 .nav-back{color:#ffc60b;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:8px;border:1px solid #ffc60b;background:transparent}
 .content{flex:1;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .screen{display:none}.screen.active{display:block}
-.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.sg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
 .sc{background:#111;border-radius:10px;padding:12px;text-align:center}
-.sc.wide{grid-column:span 2;cursor:pointer}.sc.wide:hover{background:#1a1a1a}
+.sc.wide{grid-column:span 3;cursor:pointer}.sc.wide:hover{background:#1a1a1a}
 .sn{font-size:24px;font-weight:700;color:#ffc60b}
 .sl{font-size:11px;color:#aaa;margin-top:2px}
 .ebox{background:#111;border-radius:10px;padding:12px;margin-bottom:10px;display:none}
@@ -129,11 +129,12 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
       <div class="sg">
         <div class="sc"><div class="sn" id="h-active">0</div><div class="sl">Active jobs</div></div>
         <div class="sc"><div class="sn" id="h-pending">0</div><div class="sl">Pending jobs</div></div>
+        <div class="sc"><div class="sn" id="h-quoted">0</div><div class="sl">Quoted jobs</div></div>
         <div class="sc wide" onclick="toggleEdit('bank')"><div class="sn" id="bank-disp">$0.00</div><div class="sl">Bank account &#9998;</div></div>
-        <div class="sc wide" onclick="toggleEdit('bids')"><div class="sn" id="bids-disp">$0.00</div><div class="sl">Bids out / unrealized &#9998;</div></div>
+        <div class="sc wide"><div class="sn" id="bids-disp">$0.00</div><div class="sl">Bids out / unrealized (auto)</div></div>
       </div>
       <div class="ebox" id="edit-bank"><label>Update bank balance</label><div class="erow"><input id="inp-bank" placeholder="e.g. 58042.37"/><button class="ysave" onclick="saveMoney('bank')">Save</button></div></div>
-      <div class="ebox" id="edit-bids"><label>Update bids out / unrealized</label><div class="erow"><input id="inp-bids" placeholder="e.g. 306542.37"/><button class="ysave" onclick="saveMoney('bids')">Save</button></div></div>
+      
       <button class="mbtn" onclick="goTo('jobs','Jobs')"><div class="micon">&#128203;</div><div><div class="mlbl">Jobs</div><div class="msub" id="jobs-sub">0 active &middot; 0 pending</div></div><span class="marr">&#9654;</span></button>
       <button class="mbtn" onclick="goTo('checklist','Pre-job checklist')"><div class="micon">&#9989;</div><div><div class="mlbl">Checklist</div><div class="msub">Run before every job</div></div><span class="marr">&#9654;</span></button>
     </div>
@@ -243,7 +244,7 @@ db.collection("projects").orderBy("createdAt","desc").onSnapshot(snap=>{
 });
 function toggleEdit(w){const b=document.getElementById('edit-'+w),o=w==='bank'?'bids':'bank';document.getElementById('edit-'+o).style.display='none';b.style.display=b.style.display==='block'?'none':'block';}
 function saveMoney(w){const v=parseFloat(document.getElementById('inp-'+w).value.replace(/[^0-9.]/g,''));if(isNaN(v))return;document.getElementById(w+'-disp').textContent=fmt(v);document.getElementById('edit-'+w).style.display='none';document.getElementById('inp-'+w).value='';}
-function updateStats(){const a=jobs.filter(j=>j.status==='active').length,p=jobs.filter(j=>j.status==='pending'||j.status==='quoted').length;document.getElementById('h-active').textContent=a;document.getElementById('h-pending').textContent=p;document.getElementById('jobs-sub').textContent=a+' active · '+p+' pending';}
+function updateStats(){const a=jobs.filter(j=>j.status==='active').length,p=jobs.filter(j=>j.status==='pending').length,q=jobs.filter(j=>j.status==='quoted').length;document.getElementById('h-active').textContent=a;document.getElementById('h-pending').textContent=p;document.getElementById('h-quoted').textContent=q;document.getElementById('jobs-sub').textContent=a+' active · '+p+' pending';const bids=jobs.filter(j=>j.status==='quoted').reduce((s,j)=>s+(j.value||0),0);document.getElementById('bids-disp').textContent=fmt(bids);}
 function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-'+s).classList.add('active');}
 function goTo(s,t){showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='block';navStack.push({s,t});if(s==='jobs')renderJobs();}
 function tabTo(el,s,t){document.querySelectorAll('.titem').forEach(x=>x.classList.remove('active'));el.classList.add('active');showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='none';navStack=[];if(s==='jobs')renderJobs();}
