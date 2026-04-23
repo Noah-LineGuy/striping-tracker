@@ -174,6 +174,30 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
       </div>
     </div>
     <div class="screen" id="s-detail"><div id="detail-wrap"></div></div>
+    <div class="screen" id="s-edit">
+      <div class="card">
+        <div class="fg"><label>Client / location name</label><input id="ej-name" placeholder="e.g. Walmart on Main St"/></div>
+        <div class="fg"><label>Address</label><input id="ej-addr" placeholder="123 Main St, Williston ND"/></div>
+        <div class="fg2">
+          <div class="fg" style="margin:0"><label>Date</label><input id="ej-date" type="date"/></div>
+          <div class="fg" style="margin:0"><label>Job value ($)</label><input id="ej-value" type="number" placeholder="0.00"/></div>
+        </div>
+        <div class="fg"><label>Paint needed (buckets)</label>
+          <div class="pinputs">
+            <div class="pir"><div class="pd py"></div><input id="ej-py" type="number" min="0" placeholder="Yellow"/></div>
+            <div class="pir"><div class="pd pw"></div><input id="ej-pw" type="number" min="0" placeholder="White"/></div>
+            <div class="pir"><div class="pd pb2"></div><input id="ej-pb" type="number" min="0" placeholder="Blue"/></div>
+            <div class="pir"><div class="pd pr2"></div><input id="ej-pr" type="number" min="0" placeholder="Red"/></div>
+          </div>
+        </div>
+        <div class="fg"><label>Stencils</label><input id="ej-stencils" placeholder="e.g. ADA x4, Arrow x6"/></div>
+        <div class="fg"><label>Special equipment / rentals</label><input id="ej-equip" placeholder="e.g. Ride-on striper"/></div>
+        <div class="fg"><label>Assigned to</label><select id="ej-assign"><option>Both</option><option>Noah</option><option>Terry</option></select></div>
+        <div class="fg"><label>Status</label><select id="ej-status"><option value="quoted">Quoted</option><option value="pending">Pending</option><option value="active">Active</option><option value="done">Completed</option></select></div>
+        <div class="fg"><label>Notes</label><textarea id="ej-notes" rows="3" placeholder="Scope, access info, special requests..."></textarea></div>
+        <button class="addbtn" style="margin-bottom:0" id="save-edit-btn">Save changes</button>
+      </div>
+    </div>
     <div class="screen" id="s-checklist">
       <div class="card">
         <div class="slbl" style="margin-top:0">Paint &amp; materials</div>
@@ -264,7 +288,7 @@ function renderDetail(){
     (j.stencils?'<div class="drow"><span class="dlbl">Stencils</span><span class="dval">'+j.stencils+'</span></div>':'')+
     (j.equip?'<div class="drow"><span class="dlbl">Equip.</span><span class="dval">'+j.equip+'</span></div>':'')+
     (j.notes?'<div style="margin-top:12px"><div class="slbl" style="margin-top:0">Notes</div><div style="font-size:13px;color:#111;background:#f9f9f9;border-radius:8px;padding:10px;line-height:1.6">'+j.notes+'</div></div>':'')+
-    '<button class="delbtn" id="del-btn">Delete this job</button></div></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px"><button style="padding:10px;border-radius:8px;border:1px solid #ffc60b;background:transparent;color:#ffc60b;font-size:13px;font-weight:700;cursor:pointer" id="edit-btn">Edit job</button><button class="delbtn" style="margin-top:0" id="del-btn">Delete this job</button></div></div></div>'+
     '<div class="isec" id="isec-expenses"><div class="card">'+
     '<div class="msum-grid"><div class="msum"><div class="msum-n">'+fmt(te)+'</div><div class="msum-l">Total spent</div></div>'+
     '<div class="msum"><div class="msum-n '+pc+'">'+fmt(profit)+'</div><div class="msum-l">Profit</div></div></div>'+
@@ -282,6 +306,7 @@ function renderDetail(){
     '<div class="arow"><input id="todo-text" placeholder="New task..."/><select id="todo-who"><option>Noah</option><option>Terry</option><option>Both</option></select><button id="add-todo-btn">Add</button></div></div></div>';
   document.querySelectorAll('.itab').forEach(tab=>{tab.addEventListener('click',()=>switchTab(tab.id.replace('itab-','')));});
   document.getElementById('del-btn').addEventListener('click',()=>deleteJob(activeJobId));
+  document.getElementById('edit-btn').addEventListener('click',()=>openEdit(activeJobId));
   document.getElementById('status-sel').addEventListener('change',function(){changeStatus(this.value);});
   document.getElementById('add-exp-btn').addEventListener('click',addExpense);
   document.getElementById('post-upd-btn').addEventListener('click',addUpdate);
@@ -296,12 +321,47 @@ function delExpense(i){const j=jobs.find(x=>x.id===activeJobId);const expenses=[
 function addUpdate(){const txt=document.getElementById('upd-text').value.trim();if(!txt)return;const j=jobs.find(x=>x.id===activeJobId);const updates=[...(j.updates||[]),{who:document.getElementById('upd-who').value,time:nowStr(),text:txt}];db.collection("projects").doc(activeJobId).update({updates});document.getElementById('upd-text').value='';}
 function addTodo(){const txt=document.getElementById('todo-text').value.trim();if(!txt)return;const j=jobs.find(x=>x.id===activeJobId);const todos=[...(j.todos||[]),{text:txt,done:false,who:document.getElementById('todo-who').value}];db.collection("projects").doc(activeJobId).update({todos});document.getElementById('todo-text').value='';}
 function toggleTodo(i,checked){const j=jobs.find(x=>x.id===activeJobId);const todos=[...(j.todos||[])];todos[i]={...todos[i],done:checked};db.collection("projects").doc(activeJobId).update({todos});}
+function openEdit(id){
+  const j=jobs.find(x=>x.id===id);if(!j)return;
+  document.getElementById('ej-name').value=j.name||'';
+  document.getElementById('ej-addr').value=j.addr||'';
+  document.getElementById('ej-date').value=j.date||'';
+  document.getElementById('ej-value').value=j.value||'';
+  document.getElementById('ej-py').value=j.py||'';
+  document.getElementById('ej-pw').value=j.pw||'';
+  document.getElementById('ej-pb').value=j.pb||'';
+  document.getElementById('ej-pr').value=j.pr||'';
+  document.getElementById('ej-stencils').value=j.stencils||'';
+  document.getElementById('ej-equip').value=j.equip||'';
+  document.getElementById('ej-assign').value=j.assign||'Both';
+  document.getElementById('ej-status').value=j.status||'active';
+  document.getElementById('ej-notes').value=j.notes||'';
+  goTo('edit','Edit job');
+}
 function deleteJob(id){if(!confirm('Delete this job? This cannot be undone.'))return;db.collection("projects").doc(id).delete();goBack();}
 document.getElementById('save-job-btn').addEventListener('click',()=>{
   const name=document.getElementById('nj-name').value.trim();if(!name){alert('Please enter a job name.');return;}
   db.collection("projects").add({name,addr:document.getElementById('nj-addr').value.trim(),date:document.getElementById('nj-date').value,value:parseFloat(document.getElementById('nj-value').value)||0,py:parseInt(document.getElementById('nj-py').value)||0,pw:parseInt(document.getElementById('nj-pw').value)||0,pb:parseInt(document.getElementById('nj-pb').value)||0,pr:parseInt(document.getElementById('nj-pr').value)||0,stencils:document.getElementById('nj-stencils').value.trim(),equip:document.getElementById('nj-equip').value.trim(),assign:document.getElementById('nj-assign').value,status:document.getElementById('nj-status').value,notes:document.getElementById('nj-notes').value.trim(),updates:[],todos:[],expenses:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   ['nj-name','nj-addr','nj-date','nj-value','nj-py','nj-pw','nj-pb','nj-pr','nj-stencils','nj-equip','nj-notes'].forEach(id=>document.getElementById(id).value='');
   goBack();
+});
+document.getElementById('save-edit-btn').addEventListener('click',()=>{
+  const name=document.getElementById('ej-name').value.trim();if(!name){alert('Please enter a job name.');return;}
+  db.collection("projects").doc(activeJobId).update({
+    name,
+    addr:document.getElementById('ej-addr').value.trim(),
+    date:document.getElementById('ej-date').value,
+    value:parseFloat(document.getElementById('ej-value').value)||0,
+    py:parseInt(document.getElementById('ej-py').value)||0,
+    pw:parseInt(document.getElementById('ej-pw').value)||0,
+    pb:parseInt(document.getElementById('ej-pb').value)||0,
+    pr:parseInt(document.getElementById('ej-pr').value)||0,
+    stencils:document.getElementById('ej-stencils').value.trim(),
+    equip:document.getElementById('ej-equip').value.trim(),
+    assign:document.getElementById('ej-assign').value,
+    status:document.getElementById('ej-status').value,
+    notes:document.getElementById('ej-notes').value.trim()
+  }).then(()=>goBack());
 });
 function ck(cb){cb.nextElementSibling.classList.toggle('done',cb.checked);}
 function resetCL(){document.querySelectorAll('#s-checklist input[type=checkbox]').forEach(cb=>{cb.checked=false;if(cb.nextElementSibling)cb.nextElementSibling.classList.remove('done');});}
