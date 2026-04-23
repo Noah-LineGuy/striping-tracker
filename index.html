@@ -6,220 +6,139 @@
 <title>The Line Guys</title>
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#111111"/>
+<meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <meta name="apple-mobile-web-app-title" content="Line Guys"/>
 <link rel="apple-touch-icon" href="icon-192.png"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111}
+body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-highlight-color:transparent}
 .app{max-width:480px;margin:0 auto;background:#f0f0f0;min-height:100vh;display:flex;flex-direction:column}
 .nav{background:#111;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .nav-title{color:#ffc60b;font-size:18px;font-weight:700;letter-spacing:1px}
 .nav-back{color:#ffc60b;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:8px;border:1px solid #ffc60b;background:transparent}
-.content{flex:1;padding:16px;overflow-y:auto}
+.content{flex:1;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .screen{display:none}.screen.active{display:block}
-/* Stats */
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.stat{background:#111;border-radius:10px;padding:12px;text-align:center}
-.stat-num{font-size:24px;font-weight:700;color:#ffc60b}
-.stat-label{font-size:11px;color:#aaa;margin-top:2px}
-.stat.wide{grid-column:span 2;cursor:pointer}
-.stat.wide:hover{background:#1a1a1a}
-.edit-box{background:#111;border-radius:10px;padding:12px;margin-bottom:10px;display:none}
-.edit-box label{font-size:12px;color:#aaa;display:block;margin-bottom:6px}
-.edit-row{display:flex;gap:8px}
-.edit-row input{flex:1;font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid #ffc60b;background:#222;color:#ffc60b;font-family:Arial,sans-serif}
-.save-btn{background:#ffc60b;color:#111;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer}
-/* Menu buttons */
-.menu-btn{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #ddd;border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;width:100%;text-align:left}
-.menu-btn:hover{background:#fffbee;border-color:#ffc60b}
-.menu-icon{width:42px;height:42px;border-radius:10px;background:#ffc60b;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.menu-label{font-size:15px;font-weight:700;color:#111}
-.menu-sub{font-size:12px;color:#777;margin-top:2px}
-.menu-arr{margin-left:auto;color:#bbb;font-size:14px}
-/* Cards */
-.card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:12px}
-/* Job list */
-.job-card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer}
-.job-card:hover{background:#fffbee;border-color:#ffc60b}
-.job-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:8px}
-.job-name{font-size:15px;font-weight:700;color:#111;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.job-meta{font-size:12px;color:#777}
-/* Badges */
-.badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
-.badge-active{background:#ffc60b;color:#111}
-.badge-pending{background:#333;color:#ffc60b}
-.badge-quoted{background:#eee;color:#555}
-.badge-done{background:#d4edda;color:#155724}
-/* Add button */
-.add-btn{background:#ffc60b;color:#111;border:none;border-radius:12px;padding:13px;width:100%;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:14px}
-.add-btn:hover{background:#e6b000}
-/* Section labels */
-.slabel{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.6px;margin:16px 0 8px}
-.slabel:first-child{margin-top:0}
-/* Detail rows */
-.drow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f0f0f0}
-.drow:last-child{border-bottom:none}
-.dlabel{font-size:13px;color:#888}
-.dval{font-size:13px;color:#111;text-align:right;font-weight:500}
-/* Paint */
-.paint-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}
-.paint-item{display:flex;align-items:center;gap:5px}
-.pdot{width:13px;height:13px;border-radius:50%;flex-shrink:0}
-.py{background:#ffc60b;border:1px solid #e6b000}
-.pw{background:#fff;border:1px solid #aaa}
-.pb{background:#3b82f6;border:1px solid #2563eb}
-.pr{background:#ef4444;border:1px solid #dc2626}
-.pval{font-size:13px;color:#111;font-weight:500}
-.punit{font-size:11px;color:#888}
-/* Money display */
-.money-big{font-size:26px;font-weight:700;color:#111;margin:4px 0 2px}
-.money-label{font-size:12px;color:#888}
-.profit-pos{color:#155724}
-.profit-neg{color:#721c24}
-/* Expense items */
-.exp-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f0f0f0}
-.exp-item:last-child{border-bottom:none}
-.exp-cat{font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;margin-right:8px}
-.exp-cat-paint{background:#fff8dc;color:#856404}
-.exp-cat-fuel{background:#fde8d8;color:#7d3c0f}
-.exp-cat-rental{background:#e8d5f5;color:#5b2c6f}
-.exp-cat-labor{background:#d1ecf1;color:#0c5460}
-.exp-cat-other{background:#e2e3e5;color:#383d41}
-.exp-desc{font-size:13px;color:#111;flex:1}
-.exp-amt{font-size:13px;font-weight:700;color:#111}
-.exp-del{background:none;border:none;color:#ccc;font-size:16px;cursor:pointer;padding:0 4px}
-.exp-del:hover{color:#e74c3c}
-/* To-do */
-.todo-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0}
-.todo-row:last-child{border-bottom:none}
-.todo-row input[type=checkbox]{width:16px;height:16px;accent-color:#ffc60b;cursor:pointer;flex-shrink:0}
-.todo-text{font-size:14px;color:#111;flex:1}
-.todo-text.done{text-decoration:line-through;color:#bbb}
-.who-tag{font-size:11px;color:#555;background:#f0f0f0;padding:2px 8px;border-radius:10px;white-space:nowrap}
-/* Updates */
-.update-bubble{background:#f5f5f5;border-radius:8px;padding:10px;margin-bottom:8px}
-.update-who{font-size:11px;color:#888;margin-bottom:3px}
-.update-txt{font-size:13px;color:#111;line-height:1.5}
-/* Files */
-.file-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0}
-.file-row:last-child{border-bottom:none}
-.file-icon{width:32px;height:32px;background:#ffc60b;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-/* Checklist */
-.clist-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #f0f0f0}
-.clist-row:last-child{border-bottom:none}
-.clist-row input{width:18px;height:18px;accent-color:#ffc60b;cursor:pointer}
-.clist-label{font-size:15px;color:#111;flex:1}
-.clist-label.done{text-decoration:line-through;color:#bbb}
-.clist-cat{font-size:11px;color:#555;background:#f0f0f0;padding:2px 8px;border-radius:10px}
-/* Docs */
-.doc-btn{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer}
-.doc-btn:hover{background:#fffbee;border-color:#ffc60b}
-.doc-icon{width:36px;height:36px;border-radius:8px;background:#ffc60b;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.doc-name{font-size:14px;font-weight:700;color:#111}
-.doc-meta{font-size:12px;color:#777;margin-top:2px}
-/* Form */
-.form-group{margin-bottom:13px}
-.form-group label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:5px}
-.form-group input,.form-group select,.form-group textarea{width:100%;font-size:14px;padding:9px 11px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif}
-.form-group textarea{resize:none}
-.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.paint-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
-.paint-input-row{display:flex;align-items:center;gap:6px}
-.paint-input-row .pdot{width:14px;height:14px}
-.paint-input-row input{flex:1;font-size:13px;padding:7px 8px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif}
-/* Expense form */
-.exp-form{background:#f9f9f9;border-radius:10px;padding:12px;margin-top:12px;border:1px solid #eee}
-.exp-form-row{display:flex;gap:8px;flex-wrap:wrap}
-.exp-form-row select,.exp-form-row input{flex:1;min-width:100px;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif}
-/* Add inline */
-.add-inline-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.add-inline-row input,.add-inline-row select{flex:1;min-width:100px;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif}
-.add-inline-row button{font-size:13px;padding:8px 14px;background:#ffc60b;color:#111;border:none;border-radius:8px;font-weight:700;cursor:pointer;white-space:nowrap}
-/* Compose */
-.compose-row{display:flex;gap:8px;margin-top:10px}
-.compose-row textarea{flex:1;font-size:13px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;resize:none;background:#fff;color:#111;font-family:Arial,sans-serif}
-.compose-right{display:flex;flex-direction:column;gap:6px}
-.compose-right select{font-size:12px;padding:5px 8px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif}
-/* Sort bar */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.sc{background:#111;border-radius:10px;padding:12px;text-align:center}
+.sc.wide{grid-column:span 2;cursor:pointer}.sc.wide:hover{background:#1a1a1a}
+.sn{font-size:24px;font-weight:700;color:#ffc60b}
+.sl{font-size:11px;color:#aaa;margin-top:2px}
+.ebox{background:#111;border-radius:10px;padding:12px;margin-bottom:10px;display:none}
+.ebox label{font-size:12px;color:#aaa;display:block;margin-bottom:6px}
+.erow{display:flex;gap:8px}
+.erow input{flex:1;font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid #ffc60b;background:#222;color:#ffc60b;font-family:Arial,sans-serif}
+.ysave{background:#ffc60b;color:#111;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer}
+.mbtn{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #ddd;border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;width:100%;text-align:left}
+.mbtn:hover{background:#fffbee;border-color:#ffc60b}
+.micon{width:42px;height:42px;border-radius:10px;background:#ffc60b;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.mlbl{font-size:15px;font-weight:700;color:#111}
+.msub{font-size:12px;color:#777;margin-top:2px}
+.marr{margin-left:auto;color:#bbb;font-size:14px}
+.addbtn{background:#ffc60b;color:#111;border:none;border-radius:12px;padding:13px;width:100%;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;display:block}
+.addbtn:hover{background:#e6b000}
 .sort-bar{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
 .srtbtn{padding:6px 14px;font-size:12px;font-weight:700;border-radius:20px;border:1px solid #ddd;background:#fff;color:#555;cursor:pointer;white-space:nowrap}
-.srtbtn:hover{border-color:#ffc60b;color:#111}
 .srtbtn.active{background:#ffc60b;color:#111;border-color:#ffc60b}
 .job-count{font-size:11px;color:#888;margin-bottom:10px}
-/* Ghost button */
-.ghost-btn{width:100%;padding:11px;border-radius:10px;border:2px dashed #ffc60b;background:transparent;color:#ffc60b;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px}
-.reset-btn{width:100%;padding:10px;border-radius:8px;border:1px solid #ffc60b;background:transparent;color:#ffc60b;font-size:14px;cursor:pointer;margin-top:10px}
-/* Tab bar */
-.tab-bar{background:#111;display:flex;border-top:2px solid #ffc60b;flex-shrink:0}
-.tab-item{flex:1;padding:10px 4px;text-align:center;cursor:pointer;font-size:11px;color:#777;border-top:2px solid transparent;margin-top:-2px}
-.tab-item.active{color:#ffc60b;border-top-color:#ffc60b;font-weight:700}
-/* Inner tabs */
-.inner-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.jcard{background:#fff;border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.jcard:active{background:#fffbee;border-color:#ffc60b}
+.jrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:8px}
+.jname{font-size:15px;font-weight:700;color:#111;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jmeta{font-size:12px;color:#777}
+.bdg{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.ba{background:#ffc60b;color:#111}.bp{background:#333;color:#ffc60b}.bq{background:#eee;color:#555}.bd{background:#d4edda;color:#155724}
+.card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:12px}
+.slbl{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.6px;margin:16px 0 8px}
+.slbl:first-child{margin-top:0}
+.drow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f0f0f0}
+.drow:last-child{border-bottom:none}
+.dlbl{font-size:13px;color:#888}.dval{font-size:13px;color:#111;font-weight:500;text-align:right}
+.prow{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+.pi{display:flex;align-items:center;gap:5px}
+.pd{width:13px;height:13px;border-radius:50%;flex-shrink:0}
+.py{background:#ffc60b;border:1px solid #e6b000}.pw{background:#fff;border:1px solid #aaa}
+.pb2{background:#3b82f6;border:1px solid #2563eb}.pr2{background:#ef4444;border:1px solid #dc2626}
+.pv{font-size:13px;color:#111;font-weight:500}.pu{font-size:11px;color:#888}
+.mbig{font-size:26px;font-weight:700;color:#111;margin:4px 0 2px}.msmall{font-size:12px;color:#888}
+.mpos{color:#155724}.mneg{color:#721c24}
+.itabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
 .itab{padding:6px 12px;font-size:12px;color:#555;cursor:pointer;border-radius:8px;border:1px solid #ddd;background:#fff;font-weight:700}
 .itab.active{background:#ffc60b;color:#111;border-color:#ffc60b}
-.isection{display:none}.isection.active{display:block}
+.isec{display:none}.isec.active{display:block}
+.eitem{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;gap:6px}
+.eitem:last-child{border-bottom:none}
+.ecat{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.ec-paint{background:#fff8dc;color:#856404}.ec-fuel{background:#fde8d8;color:#7d3c0f}
+.ec-rental{background:#e8d5f5;color:#5b2c6f}.ec-labor{background:#d1ecf1;color:#0c5460}.ec-other{background:#e2e3e5;color:#383d41}
+.edesc{font-size:12px;color:#111;flex:1}.eamt{font-size:12px;font-weight:700;color:#111}
+.edel{background:none;border:none;color:#ccc;font-size:16px;cursor:pointer;padding:0 4px}
+.expform{background:#f9f9f9;border-radius:10px;padding:12px;margin-top:12px;border:1px solid #eee}
+.expform-lbl{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.frow{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.frow input,.frow select{flex:1;min-width:80px;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif}
+.trow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0}
+.trow:last-child{border-bottom:none}
+.trow input[type=checkbox]{width:16px;height:16px;accent-color:#ffc60b;cursor:pointer;flex-shrink:0}
+.ttxt{font-size:14px;color:#111;flex:1}.ttxt.done{text-decoration:line-through;color:#bbb}
+.wtag{font-size:11px;color:#555;background:#f0f0f0;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.ubub{background:#f5f5f5;border-radius:8px;padding:10px;margin-bottom:8px}
+.uwho{font-size:11px;color:#888;margin-bottom:3px}.utxt{font-size:13px;color:#111;line-height:1.5}
+.crow{display:flex;gap:8px;margin-top:10px}
+.crow textarea{flex:1;font-size:13px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;resize:none;background:#fff;color:#111;font-family:Arial,sans-serif}
+.cright{display:flex;flex-direction:column;gap:6px}
+.cright select{font-size:12px;padding:5px 8px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111}
+.arow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.arow input,.arow select{flex:1;min-width:90px;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif}
+.arow button{font-size:13px;padding:8px 14px;background:#ffc60b;color:#111;border:none;border-radius:8px;font-weight:700;cursor:pointer}
+.crow2{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #f0f0f0}
+.crow2:last-child{border-bottom:none}
+.crow2 input[type=checkbox]{width:18px;height:18px;accent-color:#ffc60b;cursor:pointer}
+.clbl{font-size:15px;color:#111;flex:1}.clbl.done{text-decoration:line-through;color:#bbb}
+.ccat{font-size:11px;color:#555;background:#f0f0f0;padding:2px 8px;border-radius:10px}
+.rst{width:100%;padding:10px;border-radius:8px;border:1px solid #ffc60b;background:transparent;color:#ffc60b;font-size:14px;cursor:pointer;margin-top:10px}
+.delbtn{width:100%;margin-top:14px;padding:10px;border-radius:8px;border:1px solid #ffcccc;background:#fff5f5;color:#c0392b;font-size:13px;font-weight:700;cursor:pointer}
 .empty{font-size:13px;color:#aaa;text-align:center;padding:20px 0}
-/* Modal */
-.modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center}
-.modal-wrap.open{display:flex}
-.modal{background:#fff;border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
-.modal h3{font-size:17px;font-weight:700;margin-bottom:16px;color:#111}
-.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
-.btn-cancel{background:#fff;border:1px solid #ddd;color:#555;border-radius:8px;padding:9px 16px;font-size:14px;cursor:pointer}
+.loading{font-size:14px;color:#888;text-align:center;padding:30px 0}
+.msum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.msum{background:#f5f5f5;border-radius:10px;padding:12px;text-align:center}
+.msum-n{font-size:20px;font-weight:700;color:#111}.msum-l{font-size:11px;color:#888;margin-top:2px}
+.tabbar{display:flex;background:#111;border-top:2px solid #ffc60b;flex-shrink:0}
+.titem{flex:1;padding:10px 4px;text-align:center;cursor:pointer;font-size:11px;color:#777;border-top:2px solid transparent;margin-top:-2px}
+.titem.active{color:#ffc60b;border-top-color:#ffc60b;font-weight:700}
+.fg{margin-bottom:12px}
+.fg label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:5px}
+.fg input,.fg select,.fg textarea{width:100%;font-size:14px;padding:9px 11px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif}
+.fg textarea{resize:none}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.pinputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.pir{display:flex;align-items:center;gap:6px}
+.pir .pd{width:14px;height:14px}
+.pir input{flex:1;font-size:13px;padding:7px 8px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="nav">
     <span class="nav-title" id="nav-title">THE LINE GUYS</span>
-    <button class="nav-back" id="nav-back" onclick="goBack()" style="display:none">&#8592; Back</button>
+    <button class="nav-back" id="nav-back" style="display:none" onclick="goBack()">&#8592; Back</button>
   </div>
   <div class="content">
-
-    <!-- HOME -->
-    <div class="screen active" id="screen-home">
-      <div class="stat-grid">
-        <div class="stat"><div class="stat-num" id="s-active">0</div><div class="stat-label">Active jobs</div></div>
-        <div class="stat"><div class="stat-num" id="s-pending">0</div><div class="stat-label">Pending jobs</div></div>
-        <div class="stat wide" onclick="toggleEdit('bank')">
-          <div class="stat-num" id="bank-disp">$0.00</div>
-          <div class="stat-label">Bank account balance &nbsp;&#9998;</div>
-        </div>
-        <div class="stat wide" onclick="toggleEdit('bids')">
-          <div class="stat-num" id="bids-disp">$0.00</div>
-          <div class="stat-label">Bids out / unrealized &nbsp;&#9998;</div>
-        </div>
+    <div class="screen active" id="s-home">
+      <div class="sg">
+        <div class="sc"><div class="sn" id="h-active">0</div><div class="sl">Active jobs</div></div>
+        <div class="sc"><div class="sn" id="h-pending">0</div><div class="sl">Pending jobs</div></div>
+        <div class="sc wide" onclick="toggleEdit('bank')"><div class="sn" id="bank-disp">$0.00</div><div class="sl">Bank account &#9998;</div></div>
+        <div class="sc wide" onclick="toggleEdit('bids')"><div class="sn" id="bids-disp">$0.00</div><div class="sl">Bids out / unrealized &#9998;</div></div>
       </div>
-      <div class="edit-box" id="edit-bank">
-        <label>Update bank balance</label>
-        <div class="edit-row"><input id="inp-bank" type="text" placeholder="e.g. 58042.37" /><button class="save-btn" onclick="saveMoney('bank')">Save</button></div>
-      </div>
-      <div class="edit-box" id="edit-bids">
-        <label>Update bids out / unrealized</label>
-        <div class="edit-row"><input id="inp-bids" type="text" placeholder="e.g. 306542.37" /><button class="save-btn" onclick="saveMoney('bids')">Save</button></div>
-      </div>
-      <button class="menu-btn" onclick="nav('jobs','Jobs')">
-        <div class="menu-icon">&#128203;</div>
-        <div><div class="menu-label">Jobs</div><div class="menu-sub" id="jobs-sub">0 active · 0 pending</div></div>
-        <span class="menu-arr">&#9654;</span>
-      </button>
-      <button class="menu-btn" onclick="nav('checklist','Pre-job checklist')">
-        <div class="menu-icon">&#9989;</div>
-        <div><div class="menu-label">Checklist</div><div class="menu-sub">Run before every job</div></div>
-        <span class="menu-arr">&#9654;</span>
-      </button>
-      <button class="menu-btn" onclick="nav('docs','Business docs')">
-        <div class="menu-icon">&#128196;</div>
-        <div><div class="menu-label">Business docs</div><div class="menu-sub">IRS forms, trademark &amp; more</div></div>
-        <span class="menu-arr">&#9654;</span>
-      </button>
+      <div class="ebox" id="edit-bank"><label>Update bank balance</label><div class="erow"><input id="inp-bank" placeholder="e.g. 58042.37"/><button class="ysave" onclick="saveMoney('bank')">Save</button></div></div>
+      <div class="ebox" id="edit-bids"><label>Update bids out / unrealized</label><div class="erow"><input id="inp-bids" placeholder="e.g. 306542.37"/><button class="ysave" onclick="saveMoney('bids')">Save</button></div></div>
+      <button class="mbtn" onclick="goTo('jobs','Jobs')"><div class="micon">&#128203;</div><div><div class="mlbl">Jobs</div><div class="msub" id="jobs-sub">0 active &middot; 0 pending</div></div><span class="marr">&#9654;</span></button>
+      <button class="mbtn" onclick="goTo('checklist','Pre-job checklist')"><div class="micon">&#9989;</div><div><div class="mlbl">Checklist</div><div class="msub">Run before every job</div></div><span class="marr">&#9654;</span></button>
     </div>
-
-    <!-- JOBS LIST -->
-    <div class="screen" id="screen-jobs">
-      <button class="add-btn" onclick="openNewJob()">+ New job</button>
+    <div class="screen" id="s-jobs">
+      <button class="addbtn" onclick="goTo('newjob','New job')">+ New job</button>
       <div class="sort-bar">
         <button class="srtbtn active" onclick="setFilter(this,'all')">All</button>
         <button class="srtbtn" onclick="setFilter(this,'active')">Active</button>
@@ -228,673 +147,167 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111}
         <button class="srtbtn" onclick="setFilter(this,'done')">Completed</button>
       </div>
       <div class="job-count" id="job-count"></div>
-      <div id="job-list"><div class="empty">No jobs yet. Tap + New job to add one.</div></div>
+      <div id="job-list"><div class="loading">Loading...</div></div>
     </div>
-
-    <!-- JOB DETAIL -->
-    <div class="screen" id="screen-detail">
-      <div id="detail-content"></div>
-    </div>
-
-    <!-- CHECKLIST -->
-    <div class="screen" id="screen-checklist">
+    <div class="screen" id="s-newjob">
       <div class="card">
-        <div class="slabel" style="margin-top:0">Paint &amp; materials</div>
-        <div class="clist-row"><input type="checkbox" id="cl1" onchange="ck(this)"/><label class="clist-label" for="cl1">Paint loaded</label><span class="clist-cat">Materials</span></div>
-        <div class="clist-row"><input type="checkbox" id="cl2" onchange="ck(this)"/><label class="clist-label" for="cl2">Paint mixer</label><span class="clist-cat">Materials</span></div>
-        <div class="clist-row"><input type="checkbox" id="cl3" onchange="ck(this)"/><label class="clist-label" for="cl3">Stencils &amp; ADA stencils</label><span class="clist-cat">Materials</span></div>
-        <div class="clist-row"><input type="checkbox" id="cl4" onchange="ck(this)"/><label class="clist-label" for="cl4">Tarp</label><span class="clist-cat">Materials</span></div>
-        <div class="clist-row"><input type="checkbox" id="cl5" onchange="ck(this)"/><label class="clist-label" for="cl5">Brooms &amp; chalk</label><span class="clist-cat">Materials</span></div>
-        <div class="slabel">Equipment</div>
-        <div class="clist-row"><input type="checkbox" id="cl6" onchange="ck(this)"/><label class="clist-label" for="cl6">Blower</label><span class="clist-cat">Equipment</span></div>
-        <div class="clist-row"><input type="checkbox" id="cl7" onchange="ck(this)"/><label class="clist-label" for="cl7">Run machine (test)</label><span class="clist-cat">Equipment</span></div>
-        <div class="slabel">Fuel</div>
-        <div class="clist-row"><input type="checkbox" id="cl8" onchange="ck(this)"/><label class="clist-label" for="cl8">Fuel – 50/50 mix</label><span class="clist-cat">Fuel</span></div>
-        <div class="clist-row"><input type="checkbox" id="cl9" onchange="ck(this)"/><label class="clist-label" for="cl9">Fuel – unleaded</label><span class="clist-cat">Fuel</span></div>
-        <div class="slabel">Lighting</div>
-        <div class="clist-row"><input type="checkbox" id="cl10" onchange="ck(this)"/><label class="clist-label" for="cl10">Flashlights</label><span class="clist-cat">Lighting</span></div>
-        <div class="clist-row"><input type="checkbox" id="cl11" onchange="ck(this)"/><label class="clist-label" for="cl11">Headlamps</label><span class="clist-cat">Lighting</span></div>
-        <div class="clist-row"><input type="checkbox" id="cl12" onchange="ck(this)"/><label class="clist-label" for="cl12">Scene lights</label><span class="clist-cat">Lighting</span></div>
-      </div>
-      <button class="reset-btn" onclick="resetCL()">Reset checklist</button>
-    </div>
-
-    <!-- DOCS -->
-    <div class="screen" id="screen-docs">
-      <div id="docs-list"><div class="loading">Loading docs...</div></div>
-      <input type="file" id="doc-file-input" style="display:none" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onchange="uploadDoc(this)"/>
-      <button class="ghost-btn" style="margin-top:4px" onclick="document.getElementById('doc-file-input').click()">+ Upload new document</button>
-      <div id="doc-upload-status" style="font-size:12px;color:#888;text-align:center;padding:8px 0;display:none"></div>
-    </div>
-
-  </div>
-  <div class="tab-bar">
-    <div class="tab-item active" id="tab-home" onclick="tabNav(this,'home','THE LINE GUYS')">&#127968; Home</div>
-    <div class="tab-item" id="tab-jobs" onclick="tabNav(this,'jobs','Jobs')">&#128203; Jobs</div>
-    <div class="tab-item" id="tab-checklist" onclick="tabNav(this,'checklist','Checklist')">&#9989; Checklist</div>
-    <div class="tab-item" id="tab-docs" onclick="tabNav(this,'docs','Docs')">&#128196; Docs</div>
-  </div>
-</div>
-
-<!-- NEW JOB MODAL -->
-<div class="modal-wrap" id="modal-newjob">
-  <div class="modal">
-    <h3>New job</h3>
-    <div class="form-group"><label>Client / location name</label><input id="nj-name" placeholder="e.g. Walmart on Main St"/></div>
-    <div class="form-group"><label>Address</label><input id="nj-addr" placeholder="123 Main St, Williston ND"/></div>
-    <div class="form-row-2">
-      <div class="form-group"><label>Scheduled date</label><input id="nj-date" type="date"/></div>
-      <div class="form-group"><label>Job value ($)</label><input id="nj-value" placeholder="0.00" type="number"/></div>
-    </div>
-    <div class="form-group">
-      <label>Paint needed (buckets)</label>
-      <div class="paint-inputs">
-        <div class="paint-input-row"><div class="pdot py"></div><input id="nj-py" type="number" min="0" placeholder="Yellow"/></div>
-        <div class="paint-input-row"><div class="pdot pw"></div><input id="nj-pw" type="number" min="0" placeholder="White"/></div>
-        <div class="paint-input-row"><div class="pdot pb"></div><input id="nj-pb" type="number" min="0" placeholder="Blue"/></div>
-        <div class="paint-input-row"><div class="pdot pr"></div><input id="nj-pr" type="number" min="0" placeholder="Red"/></div>
+        <div class="fg"><label>Client / location name</label><input id="nj-name" placeholder="e.g. Walmart on Main St"/></div>
+        <div class="fg"><label>Address</label><input id="nj-addr" placeholder="123 Main St, Williston ND"/></div>
+        <div class="fg2">
+          <div class="fg" style="margin:0"><label>Date</label><input id="nj-date" type="date"/></div>
+          <div class="fg" style="margin:0"><label>Job value ($)</label><input id="nj-value" type="number" placeholder="0.00"/></div>
+        </div>
+        <div class="fg"><label>Paint needed (buckets)</label>
+          <div class="pinputs">
+            <div class="pir"><div class="pd py"></div><input id="nj-py" type="number" min="0" placeholder="Yellow"/></div>
+            <div class="pir"><div class="pd pw"></div><input id="nj-pw" type="number" min="0" placeholder="White"/></div>
+            <div class="pir"><div class="pd pb2"></div><input id="nj-pb" type="number" min="0" placeholder="Blue"/></div>
+            <div class="pir"><div class="pd pr2"></div><input id="nj-pr" type="number" min="0" placeholder="Red"/></div>
+          </div>
+        </div>
+        <div class="fg"><label>Stencils</label><input id="nj-stencils" placeholder="e.g. ADA x4, Arrow x6"/></div>
+        <div class="fg"><label>Special equipment / rentals</label><input id="nj-equip" placeholder="e.g. Ride-on striper"/></div>
+        <div class="fg"><label>Assigned to</label><select id="nj-assign"><option>Both</option><option>Noah</option><option>Terry</option></select></div>
+        <div class="fg"><label>Status</label><select id="nj-status"><option value="quoted">Quoted</option><option value="pending">Pending</option><option value="active">Active</option></select></div>
+        <div class="fg"><label>Notes</label><textarea id="nj-notes" rows="3" placeholder="Scope, access info, special requests..."></textarea></div>
+        <button class="addbtn" style="margin-bottom:0" id="save-job-btn">Save job</button>
       </div>
     </div>
-    <div class="form-group"><label>Stencils</label><input id="nj-stencils" placeholder="e.g. ADA x4, Arrow x6"/></div>
-    <div class="form-group"><label>Special equipment / rentals</label><input id="nj-equip" placeholder="e.g. Ride-on striper rental"/></div>
-    <div class="form-group"><label>Assigned to</label>
-      <select id="nj-assign"><option>Both</option><option>Noah</option><option>Terry</option></select>
-    </div>
-    <div class="form-group"><label>Status</label>
-      <select id="nj-status"><option value="quoted">Quoted</option><option value="pending">Pending</option><option value="active">Active</option></select>
-    </div>
-    <div class="form-group"><label>Notes</label><textarea id="nj-notes" rows="3" placeholder="Scope, special requests, access info..."></textarea></div>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal('modal-newjob')">Cancel</button>
-      <button class="save-btn" onclick="saveNewJob()">Save job</button>
+    <div class="screen" id="s-detail"><div id="detail-wrap"></div></div>
+    <div class="screen" id="s-checklist">
+      <div class="card">
+        <div class="slbl" style="margin-top:0">Paint &amp; materials</div>
+        <div class="crow2"><input type="checkbox" id="c1" onchange="ck(this)"/><label class="clbl" for="c1">Paint loaded</label><span class="ccat">Materials</span></div>
+        <div class="crow2"><input type="checkbox" id="c2" onchange="ck(this)"/><label class="clbl" for="c2">Paint mixer</label><span class="ccat">Materials</span></div>
+        <div class="crow2"><input type="checkbox" id="c3" onchange="ck(this)"/><label class="clbl" for="c3">Stencils &amp; ADA stencils</label><span class="ccat">Materials</span></div>
+        <div class="crow2"><input type="checkbox" id="c4" onchange="ck(this)"/><label class="clbl" for="c4">Tarp</label><span class="ccat">Materials</span></div>
+        <div class="crow2"><input type="checkbox" id="c5" onchange="ck(this)"/><label class="clbl" for="c5">Brooms &amp; chalk</label><span class="ccat">Materials</span></div>
+        <div class="slbl">Equipment</div>
+        <div class="crow2"><input type="checkbox" id="c6" onchange="ck(this)"/><label class="clbl" for="c6">Blower</label><span class="ccat">Equipment</span></div>
+        <div class="crow2"><input type="checkbox" id="c7" onchange="ck(this)"/><label class="clbl" for="c7">Run machine (test)</label><span class="ccat">Equipment</span></div>
+        <div class="slbl">Fuel</div>
+        <div class="crow2"><input type="checkbox" id="c8" onchange="ck(this)"/><label class="clbl" for="c8">Fuel - 50/50 mix</label><span class="ccat">Fuel</span></div>
+        <div class="crow2"><input type="checkbox" id="c9" onchange="ck(this)"/><label class="clbl" for="c9">Fuel - unleaded</label><span class="ccat">Fuel</span></div>
+        <div class="slbl">Lighting</div>
+        <div class="crow2"><input type="checkbox" id="c10" onchange="ck(this)"/><label class="clbl" for="c10">Flashlights</label><span class="ccat">Lighting</span></div>
+        <div class="crow2"><input type="checkbox" id="c11" onchange="ck(this)"/><label class="clbl" for="c11">Headlamps</label><span class="ccat">Lighting</span></div>
+        <div class="crow2"><input type="checkbox" id="c12" onchange="ck(this)"/><label class="clbl" for="c12">Scene lights</label><span class="ccat">Lighting</span></div>
+      </div>
+      <button class="rst" onclick="resetCL()">Reset checklist</button>
     </div>
   </div>
+  <div class="tabbar">
+    <div class="titem active" id="t-home" onclick="tabTo(this,'home','THE LINE GUYS')">&#127968; Home</div>
+    <div class="titem" id="t-jobs" onclick="tabTo(this,'jobs','Jobs')">&#128203; Jobs</div>
+    <div class="titem" id="t-checklist" onclick="tabTo(this,'checklist','Checklist')">&#9989; Checklist</div>
+  </div>
 </div>
-
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
-let jobs=[];
-let nextId=1;
-let navStack=[];
-let activeJobId=null;
-
-function fmtMoney(n){return '$'+parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mo[+m-1]+' '+parseInt(day)+', '+y;}
-function nowStamp(){const n=new Date();const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mo[n.getMonth()]+' '+n.getDate();}
-
-function toggleEdit(w){
-  const b=document.getElementById('edit-'+w);
-  const other=w==='bank'?'bids':'bank';
-  document.getElementById('edit-'+other).style.display='none';
-  b.style.display=b.style.display==='block'?'none':'block';
-}
-function saveMoney(w){
-  const v=parseFloat(document.getElementById('inp-'+w).value.replace(/[^0-9.]/g,''));
-  if(isNaN(v))return;
-  document.getElementById(w+'-disp').textContent=fmtMoney(v);
-  document.getElementById('edit-'+w).style.display='none';
-  document.getElementById('inp-'+w).value='';
-}
-
-function updateHomeStats(){
-  const a=jobs.filter(j=>j.status==='active').length;
-  const p=jobs.filter(j=>j.status==='pending'||j.status==='quoted').length;
-  document.getElementById('s-active').textContent=a;
-  document.getElementById('s-pending').textContent=p;
-  document.getElementById('jobs-sub').textContent=a+' active · '+p+' pending';
-}
-
-function nav(screen,title){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+screen).classList.add('active');
-  document.getElementById('nav-title').textContent=title;
-  document.getElementById('nav-back').style.display='block';
-  navStack.push({screen,title});
-  if(screen==='jobs')renderJobList();
-}
-function tabNav(el,screen,title){
-  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+screen).classList.add('active');
-  document.getElementById('nav-title').textContent=title;
-  document.getElementById('nav-back').style.display='none';
-  navStack=[];
-  if(screen==='jobs')renderJobList();
-  if(screen==='docs')renderDocs();
-}
-function goBack(){
-  navStack.pop();
-  if(!navStack.length){
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    document.getElementById('screen-home').classList.add('active');
-    document.getElementById('nav-title').textContent='THE LINE GUYS';
-    document.getElementById('nav-back').style.display='none';
-    document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
-    document.getElementById('tab-home').classList.add('active');
-  } else {
-    const prev=navStack[navStack.length-1];
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    document.getElementById('screen-'+prev.screen).classList.add('active');
-    document.getElementById('nav-title').textContent=prev.title;
-    if(prev.screen==='jobs')renderJobList();
-  }
-}
-
-function openNewJob(){document.getElementById('modal-newjob').classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-
-function saveNewJob(){
-  const name=document.getElementById('nj-name').value.trim();
-  if(!name){alert('Please enter a project name.');return;}
-  const job={
-    id:nextId++,name,
-    addr:document.getElementById('nj-addr').value.trim(),
-    date:document.getElementById('nj-date').value,
-    value:parseFloat(document.getElementById('nj-value').value)||0,
-    py:parseInt(document.getElementById('nj-py').value)||0,
-    pw:parseInt(document.getElementById('nj-pw').value)||0,
-    pb:parseInt(document.getElementById('nj-pb').value)||0,
-    pr:parseInt(document.getElementById('nj-pr').value)||0,
-    stencils:document.getElementById('nj-stencils').value.trim(),
-    equip:document.getElementById('nj-equip').value.trim(),
-    assign:document.getElementById('nj-assign').value,
-    status:document.getElementById('nj-status').value,
-    notes:document.getElementById('nj-notes').value.trim(),
-    updates:[],todos:[],expenses:[]
-  };
-  jobs.unshift(job);
-  ['nj-name','nj-addr','nj-date','nj-value','nj-py','nj-pw','nj-pb','nj-pr','nj-stencils','nj-equip','nj-notes'].forEach(id=>document.getElementById(id).value='');
-  closeModal('modal-newjob');
-  updateHomeStats();
-  renderJobList();
-}
-
-let activeFilter='all';
-function setFilter(el,f){
-  activeFilter=f;
-  document.querySelectorAll('.srtbtn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  renderJobList();
-}
-
-function renderJobList(){
+firebase.initializeApp({apiKey:"AIzaSyBhdH9wFuhkeRZRRPJG5ojO9kWetZA4ye8",authDomain:"striping-tracker-db75b.firebaseapp.com",projectId:"striping-tracker-db75b",storageBucket:"striping-tracker-db75b.firebasestorage.app",messagingSenderId:"533884000391",appId:"1:533884000391:web:d08255ffb924b40e7dc022"});
+const db=firebase.firestore();
+let jobs=[],navStack=[],activeJobId=null,activeFilter='all';
+const fmt=n=>'$'+parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtd=d=>{if(!d)return'';const[y,m,day]=d.split('-');const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mo[+m-1]+' '+parseInt(day)+', '+y;};
+const nowStr=()=>{const n=new Date();const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mo[n.getMonth()]+' '+n.getDate();};
+db.collection("projects").orderBy("createdAt","desc").onSnapshot(snap=>{
+  jobs=snap.docs.map(d=>({id:d.id,...d.data()}));
+  updateStats();
+  if(document.getElementById('s-jobs').classList.contains('active'))renderJobs();
+  if(document.getElementById('s-detail').classList.contains('active')&&activeJobId)renderDetail();
+});
+function toggleEdit(w){const b=document.getElementById('edit-'+w),o=w==='bank'?'bids':'bank';document.getElementById('edit-'+o).style.display='none';b.style.display=b.style.display==='block'?'none':'block';}
+function saveMoney(w){const v=parseFloat(document.getElementById('inp-'+w).value.replace(/[^0-9.]/g,''));if(isNaN(v))return;document.getElementById(w+'-disp').textContent=fmt(v);document.getElementById('edit-'+w).style.display='none';document.getElementById('inp-'+w).value='';}
+function updateStats(){const a=jobs.filter(j=>j.status==='active').length,p=jobs.filter(j=>j.status==='pending'||j.status==='quoted').length;document.getElementById('h-active').textContent=a;document.getElementById('h-pending').textContent=p;document.getElementById('jobs-sub').textContent=a+' active · '+p+' pending';}
+function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-'+s).classList.add('active');}
+function goTo(s,t){showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='block';navStack.push({s,t});if(s==='jobs')renderJobs();}
+function tabTo(el,s,t){document.querySelectorAll('.titem').forEach(x=>x.classList.remove('active'));el.classList.add('active');showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='none';navStack=[];if(s==='jobs')renderJobs();}
+function goBack(){navStack.pop();if(!navStack.length){showScreen('home');document.getElementById('nav-title').textContent='THE LINE GUYS';document.getElementById('nav-back').style.display='none';document.querySelectorAll('.titem').forEach(x=>x.classList.remove('active'));document.getElementById('t-home').classList.add('active');}else{const p=navStack[navStack.length-1];showScreen(p.s);document.getElementById('nav-title').textContent=p.t;if(p.s==='jobs')renderJobs();}}
+function setFilter(el,f){activeFilter=f;document.querySelectorAll('.srtbtn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderJobs();}
+function renderJobs(){
   const el=document.getElementById('job-list');
   const order={active:0,pending:1,quoted:2,done:3};
   let shown=activeFilter==='all'?[...jobs]:jobs.filter(j=>j.status===activeFilter);
   if(activeFilter==='all')shown.sort((a,b)=>(order[a.status]||0)-(order[b.status]||0));
-  const countEl=document.getElementById('job-count');
-  if(countEl)countEl.textContent=shown.length===jobs.length?jobs.length+' jobs total':shown.length+' of '+jobs.length+' jobs';
+  const cnt=document.getElementById('job-count');
+  if(cnt)cnt.textContent=shown.length===jobs.length?jobs.length+' jobs total':shown.length+' of '+jobs.length+' jobs';
   if(!shown.length){el.innerHTML='<div class="empty">No '+(activeFilter==='all'?'jobs':activeFilter+' jobs')+' yet.</div>';return;}
-  const statusLabel={active:'Active',pending:'Pending',quoted:'Quoted',done:'Completed'};
-  el.innerHTML=shown.map(j=>`
-    <div class="job-card" data-jobid="${j.id}">
-      <div class="job-row">
-        <span class="job-name">${j.name}</span>
-        <span class="badge badge-${j.status}">${statusLabel[j.status]||j.status}</span>
-      </div>
-      <div class="job-meta">${j.addr||''}${j.date?' · '+fmtDate(j.date):''}${j.assign?' · '+j.assign:''}</div>
-    </div>`).join('');
-  document.querySelectorAll('.job-card').forEach(card=>{
-    card.addEventListener('click',()=>openDetail(card.dataset.jobid));
-  });
+  const sl={active:'Active',pending:'Pending',quoted:'Quoted',done:'Completed'};
+  const bc={active:'ba',pending:'bp',quoted:'bq',done:'bd'};
+  el.innerHTML=shown.map(j=>'<div class="jcard" data-id="'+j.id+'"><div class="jrow"><span class="jname">'+j.name+'</span><span class="bdg '+(bc[j.status]||'bq')+'">'+(sl[j.status]||j.status)+'</span></div><div class="jmeta">'+(j.addr||'')+(j.date?' · '+fmtd(j.date):'')+(j.assign?' · '+j.assign:'')+'</div></div>').join('');
+  el.querySelectorAll('.jcard').forEach(card=>{card.addEventListener('click',()=>openDetail(card.getAttribute('data-id')));});
 }
-
-function openDetail(id){
-  activeJobId=id;
-  renderDetail();
-  nav('detail',jobs.find(j=>j.id===id).name);
-}
-
+function openDetail(id){activeJobId=id;const j=jobs.find(x=>x.id===id);if(j){renderDetail();goTo('detail',j.name);}}
+function paintHTML(j){let h='';if(j.py>0)h+='<div class="pi"><div class="pd py"></div><span class="pv">'+j.py+'</span><span class="pu">bkt</span></div>';if(j.pw>0)h+='<div class="pi"><div class="pd pw"></div><span class="pv">'+j.pw+'</span><span class="pu">bkt</span></div>';if(j.pb>0)h+='<div class="pi"><div class="pd pb2"></div><span class="pv">'+j.pb+'</span><span class="pu">bkt</span></div>';if(j.pr>0)h+='<div class="pi"><div class="pd pr2"></div><span class="pv">'+j.pr+'</span><span class="pu">bkt</span></div>';return h;}
 function renderDetail(){
-  const j=jobs.find(x=>x.id===activeJobId);
-  if(!j)return;
-  const totalExp=j.expenses.reduce((s,e)=>s+e.amt,0);
-  const profit=j.value-totalExp;
-  const profitClass=profit>=0?'profit-pos':'profit-neg';
-  const paintHTML=buildPaintHTML(j);
-  const statusLabel={active:'Active',pending:'Pending',quoted:'Quoted',done:'Completed'};
-
-  document.getElementById('detail-content').innerHTML=`
-    <div class="inner-tabs">
-      <div class="itab active" onclick="switchTab(this,'info')">Info</div>
-      <div class="itab" onclick="switchTab(this,'expenses')">Expenses</div>
-      <div class="itab" onclick="switchTab(this,'updates')">Updates</div>
-      <div class="itab" onclick="switchTab(this,'todos')">To-do</div>
-    </div>
-
-    <div class="isection active" id="isec-info">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <select onchange="changeStatus(this.value)" style="font-size:13px;padding:5px 8px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif">
-            <option value="quoted"${j.status==='quoted'?' selected':''}>Quoted</option>
-            <option value="pending"${j.status==='pending'?' selected':''}>Pending</option>
-            <option value="active"${j.status==='active'?' selected':''}>Active</option>
-            <option value="done"${j.status==='done'?' selected':''}>Completed</option>
-          </select>
-          <span style="font-size:12px;color:#888">${fmtDate(j.date)||'No date set'}</span>
-        </div>
-        <div class="money-big">${fmtMoney(j.value)}</div>
-        <div class="money-label">Job value</div>
-        <div class="drow" style="margin-top:10px"><span class="dlabel">Address</span><span class="dval">${j.addr||'—'}</span></div>
-        <div class="drow"><span class="dlabel">Assigned</span><span class="dval">${j.assign}</span></div>
-        ${paintHTML?`<div class="drow"><span class="dlabel">Paint needed</span><div class="paint-row">${paintHTML}</div></div>`:''}
-        ${j.stencils?`<div class="drow"><span class="dlabel">Stencils</span><span class="dval">${j.stencils}</span></div>`:''}
-        ${j.equip?`<div class="drow"><span class="dlabel">Special equip.</span><span class="dval">${j.equip}</span></div>`:''}
-        ${j.notes?`<div style="margin-top:12px"><div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">Notes</div><div style="font-size:14px;color:#111;line-height:1.6;background:#f9f9f9;border-radius:8px;padding:10px">${j.notes}</div></div>`:''}
-        <button id="delete-job-btn" style="width:100%;margin-top:14px;padding:10px;border-radius:8px;border:1px solid #ffcccc;background:#fff5f5;color:#c0392b;font-size:13px;font-weight:700;cursor:pointer">Delete this job</button>
-      </div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px">Files</span>
-        </div>
-        ${j.files&&j.files.length?j.files.map(f=>`
-          <div class="file-row">
-            <div class="file-icon">${f.type&&f.type.startsWith('image')?'&#128247;':'&#128196;'}</div>
-            <div>
-              <div style="font-size:13px;color:#111;font-weight:500">${f.name}</div>
-              <a href="${f.url}" target="_blank" style="font-size:11px;color:#ffc60b;font-weight:700;text-decoration:none">View in Drive</a>
-            </div>
-          </div>`).join(''):'<div class="empty">No files uploaded yet.</div>'}
-        <div id="gdrive-status-area" class="gdrive-status" style="display:none"></div>
-        <input type="file" id="file-input-area" style="display:none" accept="image/*,.pdf,.doc,.docx"/>
-        <button id="upload-file-btn" class="ghost-btn" style="margin-top:8px;font-size:13px;padding:9px">+ Upload photo or file</button>
-      </div>
-    </div>
-
-    <div class="isection" id="isec-expenses">
-      <div class="card">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-          <div style="background:#f5f5f5;border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:20px;font-weight:700;color:#111">${fmtMoney(totalExp)}</div>
-            <div style="font-size:11px;color:#888;margin-top:2px">Total spent</div>
-          </div>
-          <div style="background:#f5f5f5;border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:20px;font-weight:700;" class="${profitClass}">${fmtMoney(profit)}</div>
-            <div style="font-size:11px;color:#888;margin-top:2px">Profit</div>
-          </div>
-        </div>
-        <div id="exp-list">${renderExpList(j)}</div>
-        <div class="exp-form">
-          <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Add expense</div>
-          <div class="exp-form-row" style="margin-bottom:8px">
-            <select id="exp-cat">
-              <option value="paint">Paint</option>
-              <option value="fuel">Fuel</option>
-              <option value="rental">Equipment rental</option>
-              <option value="labor">Labor</option>
-              <option value="other">Other</option>
-            </select>
-            <input id="exp-amt" type="number" placeholder="Amount $" min="0"/>
-          </div>
-          <div class="exp-form-row">
-            <input id="exp-desc" placeholder="Description (optional)" style="flex:2"/>
-            <button class="save-btn" onclick="addExpense()">Add</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="isection" id="isec-updates">
-      <div class="card">
-        <div id="update-list">${renderUpdateList(j)}</div>
-        <div class="compose-row">
-          <textarea id="upd-text" rows="2" placeholder="Add an update..."></textarea>
-          <div class="compose-right">
-            <select id="upd-who"><option>Noah</option><option>Terry</option></select>
-            <button class="save-btn" style="padding:7px 12px;font-size:12px" onclick="addUpdate()">Post</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="isection" id="isec-todos">
-      <div class="card">
-        <div id="todo-list">${renderTodoList(j)}</div>
-        <div class="add-inline-row">
-          <input id="todo-text" placeholder="New task..."/>
-          <select id="todo-who"><option>Noah</option><option>Terry</option><option>Both</option></select>
-          <button onclick="addTodo()">Add</button>
-        </div>
-      </div>
-    </div>
-  `;
-  document.getElementById('delete-job-btn').addEventListener('click',()=>deleteJob(activeJobId));
-  document.getElementById('upload-file-btn').addEventListener('click',()=>document.getElementById('file-input-area').click());
-  document.getElementById('file-input-area').addEventListener('change',function(){uploadFile(this,activeJobId,j.name);});
+  const j=jobs.find(x=>x.id===activeJobId);if(!j)return;
+  const exp=j.expenses||[],todos=j.todos||[],updates=j.updates||[];
+  const te=exp.reduce((s,e)=>s+e.amt,0),profit=(j.value||0)-te,pc=profit>=0?'mpos':'mneg';
+  const cl={paint:'ec-paint',fuel:'ec-fuel',rental:'ec-rental',labor:'ec-labor',other:'ec-other'};
+  const cn={paint:'Paint',fuel:'Fuel',rental:'Rental',labor:'Labor',other:'Other'};
+  const ph=paintHTML(j);
+  document.getElementById('detail-wrap').innerHTML=
+    '<div class="itabs"><div class="itab active" id="itab-info">Info</div><div class="itab" id="itab-expenses">Expenses</div><div class="itab" id="itab-updates">Updates</div><div class="itab" id="itab-todos">To-do</div></div>'+
+    '<div class="isec active" id="isec-info"><div class="card">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+    '<select id="status-sel" style="font-size:13px;padding:5px 8px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif">'+
+    '<option value="quoted"'+(j.status==='quoted'?' selected':'')+'>Quoted</option>'+
+    '<option value="pending"'+(j.status==='pending'?' selected':'')+'>Pending</option>'+
+    '<option value="active"'+(j.status==='active'?' selected':'')+'>Active</option>'+
+    '<option value="done"'+(j.status==='done'?' selected':'')+'>Completed</option></select>'+
+    '<span style="font-size:12px;color:#888">'+(fmtd(j.date)||'No date set')+'</span></div>'+
+    '<div class="mbig">'+fmt(j.value)+'</div><div class="msmall">Job value</div>'+
+    '<div class="drow" style="margin-top:10px"><span class="dlbl">Address</span><span class="dval">'+(j.addr||'&mdash;')+'</span></div>'+
+    '<div class="drow"><span class="dlbl">Assigned</span><span class="dval">'+(j.assign||'&mdash;')+'</span></div>'+
+    (ph?'<div class="drow"><span class="dlbl">Paint</span><div class="prow">'+ph+'</div></div>':'')+
+    (j.stencils?'<div class="drow"><span class="dlbl">Stencils</span><span class="dval">'+j.stencils+'</span></div>':'')+
+    (j.equip?'<div class="drow"><span class="dlbl">Equip.</span><span class="dval">'+j.equip+'</span></div>':'')+
+    (j.notes?'<div style="margin-top:12px"><div class="slbl" style="margin-top:0">Notes</div><div style="font-size:13px;color:#111;background:#f9f9f9;border-radius:8px;padding:10px;line-height:1.6">'+j.notes+'</div></div>':'')+
+    '<button class="delbtn" id="del-btn">Delete this job</button></div></div>'+
+    '<div class="isec" id="isec-expenses"><div class="card">'+
+    '<div class="msum-grid"><div class="msum"><div class="msum-n">'+fmt(te)+'</div><div class="msum-l">Total spent</div></div>'+
+    '<div class="msum"><div class="msum-n '+pc+'">'+fmt(profit)+'</div><div class="msum-l">Profit</div></div></div>'+
+    '<div id="exp-list">'+(exp.length?exp.map((e,i)=>'<div class="eitem"><span class="ecat '+(cl[e.cat]||'ec-other')+'">'+(cn[e.cat]||'Other')+'</span><span class="edesc">'+(e.desc||cn[e.cat]||'')+'</span><span class="eamt">'+fmt(e.amt)+'</span><button class="edel" data-i="'+i+'">&#10005;</button></div>').join(''):'<div class="empty">No expenses yet.</div>')+'</div>'+
+    '<div class="expform"><div class="expform-lbl">Add expense</div>'+
+    '<div class="frow"><select id="ex-cat"><option value="paint">Paint</option><option value="fuel">Fuel</option><option value="rental">Equipment rental</option><option value="labor">Labor</option><option value="other">Other</option></select><input id="ex-amt" type="number" placeholder="Amount $" min="0"/></div>'+
+    '<div class="frow"><input id="ex-desc" placeholder="Description (optional)" style="flex:2"/><button class="ysave" id="add-exp-btn">Add</button></div></div></div></div>'+
+    '<div class="isec" id="isec-updates"><div class="card">'+
+    '<div id="upd-list">'+(updates.length?updates.map(u=>'<div class="ubub"><div class="uwho">'+u.who+' &middot; '+u.time+'</div><div class="utxt">'+u.text+'</div></div>').join(''):'<div class="empty">No updates yet.</div>')+'</div>'+
+    '<div class="crow"><textarea id="upd-text" rows="2" placeholder="Add an update..."></textarea>'+
+    '<div class="cright"><select id="upd-who"><option>Noah</option><option>Terry</option></select>'+
+    '<button class="ysave" style="font-size:12px;padding:7px 12px" id="post-upd-btn">Post</button></div></div></div></div>'+
+    '<div class="isec" id="isec-todos"><div class="card">'+
+    '<div id="todo-list">'+(todos.length?todos.map((t,i)=>'<div class="trow"><input type="checkbox"'+(t.done?' checked':'')+' data-i="'+i+'" class="todo-cb"/><span class="ttxt'+(t.done?' done':'')+'">'+t.text+'</span><span class="wtag">'+t.who+'</span></div>').join(''):'<div class="empty">No tasks yet.</div>')+'</div>'+
+    '<div class="arow"><input id="todo-text" placeholder="New task..."/><select id="todo-who"><option>Noah</option><option>Terry</option><option>Both</option></select><button id="add-todo-btn">Add</button></div></div></div>';
+  document.querySelectorAll('.itab').forEach(tab=>{tab.addEventListener('click',()=>switchTab(tab.id.replace('itab-','')));});
+  document.getElementById('del-btn').addEventListener('click',()=>deleteJob(activeJobId));
+  document.getElementById('status-sel').addEventListener('change',function(){changeStatus(this.value);});
+  document.getElementById('add-exp-btn').addEventListener('click',addExpense);
+  document.getElementById('post-upd-btn').addEventListener('click',addUpdate);
+  document.getElementById('add-todo-btn').addEventListener('click',addTodo);
+  document.querySelectorAll('.edel').forEach(btn=>{btn.addEventListener('click',()=>delExpense(parseInt(btn.getAttribute('data-i'))));});
+  document.querySelectorAll('.todo-cb').forEach(cb=>{cb.addEventListener('change',()=>toggleTodo(parseInt(cb.getAttribute('data-i')),cb.checked));});
 }
-
-function buildPaintHTML(j){
-  let h='';
-  if(j.py>0)h+=`<div class="paint-item"><div class="pdot py"></div><span class="pval">${j.py}</span><span class="punit">buckets</span></div>`;
-  if(j.pw>0)h+=`<div class="paint-item"><div class="pdot pw"></div><span class="pval">${j.pw}</span><span class="punit">buckets</span></div>`;
-  if(j.pb>0)h+=`<div class="paint-item"><div class="pdot pb"></div><span class="pval">${j.pb}</span><span class="punit">buckets</span></div>`;
-  if(j.pr>0)h+=`<div class="paint-item"><div class="pdot pr"></div><span class="pval">${j.pr}</span><span class="punit">buckets</span></div>`;
-  return h;
-}
-
-function renderExpList(j){
-  if(!j.expenses.length)return'<div class="empty">No expenses yet.</div>';
-  const catLabel={paint:'Paint',fuel:'Fuel',rental:'Rental',labor:'Labor',other:'Other'};
-  const catClass={paint:'exp-cat-paint',fuel:'exp-cat-fuel',rental:'exp-cat-rental',labor:'exp-cat-labor',other:'exp-cat-other'};
-  return j.expenses.map((e,i)=>`
-    <div class="exp-item">
-      <span class="exp-cat ${catClass[e.cat]}">${catLabel[e.cat]}</span>
-      <span class="exp-desc">${e.desc||catLabel[e.cat]}</span>
-      <span class="exp-amt">${fmtMoney(e.amt)}</span>
-      <button class="exp-del" onclick="delExpense(${i})">&#10005;</button>
-    </div>`).join('');
-}
-function renderUpdateList(j){
-  if(!j.updates.length)return'<div class="empty">No updates yet.</div>';
-  return j.updates.map(u=>`<div class="update-bubble"><div class="update-who">${u.who} · ${u.time}</div><div class="update-txt">${u.text}</div></div>`).join('');
-}
-function renderTodoList(j){
-  if(!j.todos.length)return'<div class="empty">No tasks yet.</div>';
-  return j.todos.map((t,i)=>`
-    <div class="todo-row">
-      <input type="checkbox"${t.done?' checked':''} onchange="toggleTodo(${i},this.checked)"/>
-      <span class="todo-text${t.done?' done':''}">${t.text}</span>
-      <span class="who-tag">${t.who}</span>
-    </div>`).join('');
-}
-
-function switchTab(el,tab){
-  el.parentElement.querySelectorAll('.itab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  document.querySelectorAll('.isection').forEach(s=>s.classList.remove('active'));
-  document.getElementById('isec-'+tab).classList.add('active');
-}
-function changeStatus(val){
-  const j=jobs.find(x=>x.id===activeJobId);
-  if(j){j.status=val;updateHomeStats();}
-}
-function addExpense(){
-  const j=jobs.find(x=>x.id===activeJobId);
-  const amt=parseFloat(document.getElementById('exp-amt').value);
-  if(!amt||amt<=0)return;
-  j.expenses.push({cat:document.getElementById('exp-cat').value,amt,desc:document.getElementById('exp-desc').value.trim()});
-  document.getElementById('exp-amt').value='';
-  document.getElementById('exp-desc').value='';
-  renderDetail();
-  switchTabByName('expenses');
-}
-function delExpense(i){
-  const j=jobs.find(x=>x.id===activeJobId);
-  j.expenses.splice(i,1);
-  renderDetail();
-  switchTabByName('expenses');
-}
-function addUpdate(){
-  const j=jobs.find(x=>x.id===activeJobId);
-  const txt=document.getElementById('upd-text').value.trim();
-  if(!txt)return;
-  j.updates.push({who:document.getElementById('upd-who').value,time:nowStamp(),text:txt});
-  renderDetail();
-  switchTabByName('updates');
-}
-function addTodo(){
-  const j=jobs.find(x=>x.id===activeJobId);
-  const txt=document.getElementById('todo-text').value.trim();
-  if(!txt)return;
-  j.todos.push({text:txt,done:false,who:document.getElementById('todo-who').value});
-  renderDetail();
-  switchTabByName('todos');
-}
-function toggleTodo(i,checked){
-  const j=jobs.find(x=>x.id===activeJobId);
-  j.todos[i].done=checked;
-  document.getElementById('todo-list').innerHTML=renderTodoList(j);
-}
-function switchTabByName(name){
-  const tabs=document.querySelectorAll('.itab');
-  const names=['info','expenses','updates','todos'];
-  tabs.forEach((t,i)=>{t.classList.toggle('active',names[i]===name);});
-  document.querySelectorAll('.isection').forEach(s=>s.classList.remove('active'));
-  document.getElementById('isec-'+name).classList.add('active');
-}
-function ck(cb){cb.nextElementSibling.classList.toggle('done',cb.checked);}
-function resetCL(){document.querySelectorAll('#screen-checklist input[type=checkbox]').forEach(cb=>{cb.checked=false;if(cb.nextElementSibling)cb.nextElementSibling.classList.remove('done');});}
-function deleteJob(id){
-  if(!confirm('Delete this job? This cannot be undone.'))return;
-  db.collection("projects").doc(id).delete();
-  goBack();
-}
-function renderDocs(){
-  const el=document.getElementById('docs-list');
-  if(!el)return;
-  db.collection("business-docs").orderBy("createdAt","desc").get().then(snap=>{
-    if(snap.empty){el.innerHTML='<div class="empty">No documents yet. Upload one below.</div>';return;}
-    el.innerHTML=snap.docs.map(d=>{
-      const doc=d.data();
-      const isImg=doc.type&&doc.type.startsWith('image');
-      return `<div class="doc-btn" style="justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
-          <div class="doc-icon">${isImg?'&#128247;':'&#128196;'}</div>
-          <div style="min-width:0">
-            <div class="doc-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${doc.name}</div>
-            <div class="doc-meta">${doc.uploaded||''}</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
-          <a href="${doc.url}" target="_blank" style="font-size:12px;color:#ffc60b;font-weight:700;text-decoration:none">View</a>
-          <button onclick="deleteDoc('${d.id}')" style="background:none;border:none;color:#ccc;font-size:16px;cursor:pointer">&#10005;</button>
-        </div>
-      </div>`;
-    }).join('');
-  });
-}
-function deleteDoc(id){
-  if(!confirm('Delete this document?'))return;
-  db.collection("business-docs").doc(id).delete().then(()=>renderDocs());
-}
-async function uploadDoc(input){
-  const file=input.files[0];if(!file)return;
-  const statusEl=document.getElementById('doc-upload-status');
-  statusEl.style.display='block';statusEl.textContent='Signing in to Google Drive...';
-  try{
-    const token=await getGDriveToken();
-    statusEl.textContent='Uploading '+file.name+'...';
-    const rootId=await getOrCreateFolder(token,'Line Guys Business Docs',null);
-    const meta={name:file.name,parents:[rootId]};
-    const form=new FormData();
-    form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
-    form.append('file',file);
-    const upload=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,mimeType',{method:'POST',headers:{Authorization:'Bearer '+token},body:form});
-    const result=await upload.json();
-    await fetch(`https://www.googleapis.com/drive/v3/files/${result.id}/permissions`,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})});
-    const now=new Date();
-    const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    await db.collection("business-docs").add({name:result.name,url:result.webViewLink,type:result.mimeType,driveId:result.id,uploaded:mo[now.getMonth()]+' '+now.getDate()+', '+now.getFullYear(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    statusEl.textContent='Uploaded successfully!';
-    setTimeout(()=>{statusEl.style.display='none';},2000);
-    input.value='';
-    renderDocs();
-  }catch(err){
-    console.error(err);
-    statusEl.textContent='Upload failed. Please try again.';
-    setTimeout(()=>{statusEl.style.display='none';},3000);
-  }
-}
-</script>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script>
-const firebaseConfig={
-  apiKey:"AIzaSyBhdH9wFuhkeRZRRPJG5ojO9kWetZA4ye8",
-  authDomain:"striping-tracker-db75b.firebaseapp.com",
-  projectId:"striping-tracker-db75b",
-  storageBucket:"striping-tracker-db75b.firebasestorage.app",
-  messagingSenderId:"533884000391",
-  appId:"1:533884000391:web:d08255ffb924b40e7dc022"
-};
-firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore();
-
-db.collection("projects").orderBy("createdAt","desc").onSnapshot(snapshot=>{
-  jobs=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
-  nextId=jobs.length+1;
-  updateHomeStats();
-  if(document.getElementById('screen-jobs').classList.contains('active'))renderJobList();
-  if(document.getElementById('screen-detail').classList.contains('active')&&activeJobId)renderDetail();
-});
-
-const _saveNewJob=saveNewJob;
-saveNewJob=function(){
-  const name=document.getElementById('nj-name').value.trim();
-  if(!name){alert('Please enter a project name.');return;}
-  const job={
-    name,
-    addr:document.getElementById('nj-addr').value.trim(),
-    date:document.getElementById('nj-date').value,
-    value:parseFloat(document.getElementById('nj-value').value)||0,
-    py:parseInt(document.getElementById('nj-py').value)||0,
-    pw:parseInt(document.getElementById('nj-pw').value)||0,
-    pb:parseInt(document.getElementById('nj-pb').value)||0,
-    pr:parseInt(document.getElementById('nj-pr').value)||0,
-    stencils:document.getElementById('nj-stencils').value.trim(),
-    equip:document.getElementById('nj-equip').value.trim(),
-    assign:document.getElementById('nj-assign').value,
-    status:document.getElementById('nj-status').value,
-    notes:document.getElementById('nj-notes').value.trim(),
-    updates:[],todos:[],expenses:[],
-    createdAt:firebase.firestore.FieldValue.serverTimestamp()
-  };
-  db.collection("projects").add(job);
+function switchTab(name){document.querySelectorAll('.itab').forEach(t=>t.classList.remove('active'));document.getElementById('itab-'+name).classList.add('active');document.querySelectorAll('.isec').forEach(s=>s.classList.remove('active'));document.getElementById('isec-'+name).classList.add('active');}
+function changeStatus(val){db.collection("projects").doc(activeJobId).update({status:val});}
+function addExpense(){const amt=parseFloat(document.getElementById('ex-amt').value);if(!amt||amt<=0)return;const j=jobs.find(x=>x.id===activeJobId);const expenses=[...(j.expenses||[]),{cat:document.getElementById('ex-cat').value,amt,desc:document.getElementById('ex-desc').value.trim()}];db.collection("projects").doc(activeJobId).update({expenses});document.getElementById('ex-amt').value='';document.getElementById('ex-desc').value='';}
+function delExpense(i){const j=jobs.find(x=>x.id===activeJobId);const expenses=[...(j.expenses||[])];expenses.splice(i,1);db.collection("projects").doc(activeJobId).update({expenses});}
+function addUpdate(){const txt=document.getElementById('upd-text').value.trim();if(!txt)return;const j=jobs.find(x=>x.id===activeJobId);const updates=[...(j.updates||[]),{who:document.getElementById('upd-who').value,time:nowStr(),text:txt}];db.collection("projects").doc(activeJobId).update({updates});document.getElementById('upd-text').value='';}
+function addTodo(){const txt=document.getElementById('todo-text').value.trim();if(!txt)return;const j=jobs.find(x=>x.id===activeJobId);const todos=[...(j.todos||[]),{text:txt,done:false,who:document.getElementById('todo-who').value}];db.collection("projects").doc(activeJobId).update({todos});document.getElementById('todo-text').value='';}
+function toggleTodo(i,checked){const j=jobs.find(x=>x.id===activeJobId);const todos=[...(j.todos||[])];todos[i]={...todos[i],done:checked};db.collection("projects").doc(activeJobId).update({todos});}
+function deleteJob(id){if(!confirm('Delete this job? This cannot be undone.'))return;db.collection("projects").doc(id).delete();goBack();}
+document.getElementById('save-job-btn').addEventListener('click',()=>{
+  const name=document.getElementById('nj-name').value.trim();if(!name){alert('Please enter a job name.');return;}
+  db.collection("projects").add({name,addr:document.getElementById('nj-addr').value.trim(),date:document.getElementById('nj-date').value,value:parseFloat(document.getElementById('nj-value').value)||0,py:parseInt(document.getElementById('nj-py').value)||0,pw:parseInt(document.getElementById('nj-pw').value)||0,pb:parseInt(document.getElementById('nj-pb').value)||0,pr:parseInt(document.getElementById('nj-pr').value)||0,stencils:document.getElementById('nj-stencils').value.trim(),equip:document.getElementById('nj-equip').value.trim(),assign:document.getElementById('nj-assign').value,status:document.getElementById('nj-status').value,notes:document.getElementById('nj-notes').value.trim(),updates:[],todos:[],expenses:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   ['nj-name','nj-addr','nj-date','nj-value','nj-py','nj-pw','nj-pb','nj-pr','nj-stencils','nj-equip','nj-notes'].forEach(id=>document.getElementById(id).value='');
-  closeModal('modal-newjob');
-};
-
-const _addExpense=addExpense;
-addExpense=function(){
-  const j=jobs.find(x=>x.id===activeJobId);
-  const amt=parseFloat(document.getElementById('exp-amt').value);
-  if(!amt||amt<=0)return;
-  const expenses=[...j.expenses,{cat:document.getElementById('exp-cat').value,amt,desc:document.getElementById('exp-desc').value.trim()}];
-  db.collection("projects").doc(activeJobId).update({expenses});
-  document.getElementById('exp-amt').value='';
-  document.getElementById('exp-desc').value='';
-};
-
-const _delExpense=delExpense;
-delExpense=function(i){
-  const j=jobs.find(x=>x.id===activeJobId);
-  const expenses=[...j.expenses];
-  expenses.splice(i,1);
-  db.collection("projects").doc(activeJobId).update({expenses});
-};
-
-const _addUpdate=addUpdate;
-addUpdate=function(){
-  const j=jobs.find(x=>x.id===activeJobId);
-  const txt=document.getElementById('upd-text').value.trim();
-  if(!txt)return;
-  const updates=[...j.updates,{who:document.getElementById('upd-who').value,time:nowStamp(),text:txt}];
-  db.collection("projects").doc(activeJobId).update({updates});
-  document.getElementById('upd-text').value='';
-};
-
-const _addTodo=addTodo;
-addTodo=function(){
-  const j=jobs.find(x=>x.id===activeJobId);
-  const txt=document.getElementById('todo-text').value.trim();
-  if(!txt)return;
-  const todos=[...j.todos,{text:txt,done:false,who:document.getElementById('todo-who').value}];
-  db.collection("projects").doc(activeJobId).update({todos});
-  document.getElementById('todo-text').value='';
-};
-
-const _toggleTodo=toggleTodo;
-toggleTodo=function(i,checked){
-  const j=jobs.find(x=>x.id===activeJobId);
-  const todos=[...j.todos];
-  todos[i]={...todos[i],done:checked};
-  db.collection("projects").doc(activeJobId).update({todos});
-};
-
-const _changeStatus=changeStatus;
-changeStatus=function(val){
-  const j=jobs.find(x=>x.id===activeJobId);
-  if(j){db.collection("projects").doc(activeJobId).update({status:val});}
-};
-</script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>
-const GDRIVE_CLIENT_ID='533884000391-cuvpfaku8tenhsb9v78dh5mdghipu1t7.apps.googleusercontent.com';
-const GDRIVE_SCOPE='https://www.googleapis.com/auth/drive.file';
-let gdriveToken=null;
-
-function getGDriveToken(){
-  return new Promise((resolve,reject)=>{
-    if(gdriveToken){resolve(gdriveToken);return;}
-    const client=google.accounts.oauth2.initTokenClient({
-      client_id:GDRIVE_CLIENT_ID,
-      scope:GDRIVE_SCOPE,
-      callback:(resp)=>{
-        if(resp.error){reject(resp.error);return;}
-        gdriveToken=resp.access_token;
-        resolve(gdriveToken);
-      }
-    });
-    client.requestAccessToken();
-  });
-}
-
-async function getOrCreateFolder(token,folderName,parentId){
-  const q=parentId
-    ?`name='${folderName}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`
-    :`name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
-  const search=await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)`,{headers:{Authorization:'Bearer '+token}});
-  const data=await search.json();
-  if(data.files&&data.files.length>0)return data.files[0].id;
-  const meta={name:folderName,mimeType:'application/vnd.google-apps.folder'};
-  if(parentId)meta.parents=[parentId];
-  const create=await fetch('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(meta)});
-  const folder=await create.json();
-  return folder.id;
-}
-
-function triggerUpload(jobId){
-  document.getElementById('file-input-'+jobId).click();
-}
-
-async function uploadFile(input,jobId,jobName){
-  const file=input.files[0];
-  if(!file)return;
-  const statusEl=document.getElementById('gdrive-status-area');
-  if(statusEl){statusEl.style.display='block';statusEl.textContent='Signing in to Google Drive...';}
-  try{
-    const token=await getGDriveToken();
-    if(statusEl)statusEl.textContent='Uploading '+file.name+'...';
-    const rootId=await getOrCreateFolder(token,'Line Guys Jobs',null);
-    const jobFolderId=await getOrCreateFolder(token,jobName,rootId);
-    const meta={name:file.name,parents:[jobFolderId]};
-    const form=new FormData();
-    form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
-    form.append('file',file);
-    const upload=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,mimeType',{method:'POST',headers:{Authorization:'Bearer '+token},body:form});
-    const result=await upload.json();
-    await fetch(`https://www.googleapis.com/drive/v3/files/${result.id}/permissions`,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})});
-    const j=jobs.find(x=>x.id===jobId);
-    const files=[...(j.files||[]),{name:result.name,url:result.webViewLink,type:result.mimeType,driveId:result.id}];
-    await db.collection("projects").doc(jobId).update({files});
-    if(statusEl){statusEl.textContent='Uploaded successfully!';setTimeout(()=>{statusEl.style.display='none';},2000);}
-    input.value='';
-  }catch(err){
-    console.error(err);
-    if(statusEl){statusEl.textContent='Upload failed. Please try again.';setTimeout(()=>{statusEl.style.display='none';},3000);}
-  }
-}
+  goBack();
+});
+function ck(cb){cb.nextElementSibling.classList.toggle('done',cb.checked);}
+function resetCL(){document.querySelectorAll('#s-checklist input[type=checkbox]').forEach(cb=>{cb.checked=false;if(cb.nextElementSibling)cb.nextElementSibling.classList.remove('done');});}
 </script>
 <script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js')
-      .then(()=>console.log('SW registered'))
-      .catch(e=>console.log('SW error',e));
-  });
-}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').then(()=>console.log('SW ok')).catch(e=>console.log('SW err',e));});}
 </script>
 </body>
 </html>
