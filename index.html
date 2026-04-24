@@ -137,7 +137,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
         <div class="sc wide" onclick="toggleEdit('bank')"><div class="sn" id="bank-disp">$0.00</div><div class="sl">Bank account &#9998;</div></div>
         <div class="sc wide"><div class="sn" id="bids-disp">$0.00</div><div class="sl">Bids out / unrealized (auto)</div></div>
       </div>
-      <div class="ebox" id="edit-bank"><label>Update bank balance</label><div class="erow"><input id="inp-bank" placeholder="e.g. 58042.37"/><button class="ysave" onclick="saveMoney('bank')">Save</button></div></div>
+      
       
       <button class="mbtn" onclick="goTo('jobs','Jobs')"><div class="micon">&#128203;</div><div><div class="mlbl">Jobs</div><div class="msub" id="jobs-sub">0 active &middot; 0 pending</div></div><span class="marr">&#9654;</span></button>
       <button class="mbtn" onclick="goTo('checklist','Pre-job checklist')"><div class="micon">&#9989;</div><div><div class="mlbl">Checklist</div><div class="msub">Run before every job</div></div><span class="marr">&#9654;</span></button>
@@ -248,13 +248,25 @@ let jobs=[],navStack=[],activeJobId=null,activeFilter='all';
 const fmt=n=>'$'+parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const fmtd=d=>{if(!d)return'';const[y,m,day]=d.split('-');const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mo[+m-1]+' '+parseInt(day)+', '+y;};
 const nowStr=()=>{const n=new Date();const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mo[n.getMonth()]+' '+n.getDate();};
+db.collection("settings").doc("main").onSnapshot(doc=>{
+  if(doc.exists){const d=doc.data();if(d.bankBalance!==undefined)document.getElementById('bank-disp').textContent=fmt(d.bankBalance);}
+});
 db.collection("projects").orderBy("createdAt","desc").onSnapshot(snap=>{
   jobs=snap.docs.map(d=>({id:d.id,...d.data()}));
   updateStats();
   if(document.getElementById('s-jobs').classList.contains('active'))renderJobs();
   if(document.getElementById('s-detail').classList.contains('active')&&activeJobId)renderDetail();if(document.getElementById('s-tasks').classList.contains('active'))renderTasks();
 });
-function toggleEdit(w){const b=document.getElementById('edit-'+w),o=w==='bank'?'bids':'bank';document.getElementById('edit-'+o).style.display='none';const isOpen=b.style.display==='block';b.style.display=isOpen?'none':'block';if(!isOpen){setTimeout(()=>{b.scrollIntoView({behavior:'smooth',block:'center'});b.querySelector('input').focus();},100);}}
+function toggleEdit(w){
+  if(w!=='bank')return;
+  const current=document.getElementById('bank-disp').textContent;
+  const input=prompt('Enter new bank balance:',current.replace(/[^0-9.]/g,''));
+  if(input===null)return;
+  const v=parseFloat(input.replace(/[^0-9.]/g,''));
+  if(isNaN(v)){alert('Please enter a valid number.');return;}
+  document.getElementById('bank-disp').textContent=fmt(v);
+  db.collection("settings").doc("main").set({bankBalance:v},{merge:true});
+}
 function saveMoney(w){const v=parseFloat(document.getElementById('inp-'+w).value.replace(/[^0-9.]/g,''));if(isNaN(v))return;document.getElementById(w+'-disp').textContent=fmt(v);document.getElementById('edit-'+w).style.display='none';document.getElementById('inp-'+w).value='';}
 function updateStats(){const a=jobs.filter(j=>j.status==='active').length,p=jobs.filter(j=>j.status==='pending').length,q=jobs.filter(j=>j.status==='quoted').length;document.getElementById('h-active').textContent=a;document.getElementById('h-pending').textContent=p;document.getElementById('h-quoted').textContent=q;document.getElementById('jobs-sub').textContent=a+' active · '+p+' pending';const bids=jobs.filter(j=>j.status==='quoted').reduce((s,j)=>s+(j.value||0),0);document.getElementById('bids-disp').textContent=fmt(bids);}
 function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-'+s).classList.add('active');}
