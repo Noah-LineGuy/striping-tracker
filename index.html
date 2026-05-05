@@ -120,15 +120,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
 .person-btn.active{background:#ffc60b;color:#111;border-color:#ffc60b}
 .task-job-header{font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid #ffc60b}
 .task-job-header:first-child{margin-top:0}
-.calc-card{background:#fffbee;border:1px solid #ffc60b;border-radius:12px;padding:14px;margin-bottom:12px}
-.calc-title{font-size:13px;font-weight:700;color:#111;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-.calc-grid input{font-size:13px;padding:7px 9px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif;width:100%}
-.calc-result{background:#fff;border-radius:8px;padding:10px;margin-top:8px;font-size:12px;color:#111}
-.calc-result-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0}
-.calc-result-row .pi{justify-content:flex-end}
-.use-calc-btn{width:100%;padding:8px;background:#111;color:#ffc60b;border:1px solid #ffc60b;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px}
-.use-calc-btn:hover{background:#222}
+
 </style>
 </head>
 <body>
@@ -149,7 +141,6 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
       
       
       <button class="mbtn" onclick="goTo('jobs','Jobs')"><div class="micon">&#128203;</div><div><div class="mlbl">Jobs</div><div class="msub" id="jobs-sub">0 active &middot; 0 pending</div></div><span class="marr">&#9654;</span></button>
-      <button class="mbtn" onclick="goTo('settings','Settings')"><div class="micon">&#9881;</div><div><div class="mlbl">Settings</div><div class="msub" id="settings-sub">Machine &amp; paint coverage</div></div><span class="marr">&#9654;</span></button>
       <button class="mbtn" onclick="goTo('checklist','Pre-job checklist')"><div class="micon">&#9989;</div><div><div class="mlbl">Checklist</div><div class="msub">Run before every job</div></div><span class="marr">&#9654;</span></button>
     </div>
     <div class="screen" id="s-jobs">
@@ -180,21 +171,6 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
         <div class="fg2">
           <div class="fg" style="margin:0"><label>Date</label><input id="nj-date" type="date"/></div>
           <div class="fg" style="margin:0"><label>Job value ($)</label><input id="nj-value" type="number" placeholder="0.00"/></div>
-        </div>
-        <div class="calc-card">
-          <div class="calc-title">&#128200; Paint calculator</div>
-          <div style="font-size:11px;color:#888;margin-bottom:8px">Enter counts and we&rsquo;ll estimate buckets needed</div>
-          <div class="calc-grid">
-            <input id="calc-stalls" type="number" min="0" placeholder="Standard stalls" oninput="recalculate()"/>
-            <input id="calc-ada" type="number" min="0" placeholder="ADA stalls" oninput="recalculate()"/>
-            <input id="calc-arrows" type="number" min="0" placeholder="Arrows" oninput="recalculate()"/>
-            <input id="calc-curb" type="number" min="0" placeholder="Curb (linear ft)" oninput="recalculate()"/>
-          </div>
-          <div class="calc-result" id="calc-result" style="display:none">
-            <div style="font-size:11px;color:#888;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px">Estimated buckets</div>
-            <div id="calc-result-content"></div>
-            <button class="use-calc-btn" type="button" onclick="useCalculatedAmount()">Use these amounts</button>
-          </div>
         </div>
         <div class="fg"><label>Paint needed (buckets)</label>
           <div class="pinputs">
@@ -253,27 +229,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
       </div>
       <div id="tasks-list"><div class="empty">Select a person above to see their tasks.</div></div>
     </div>
-    <div class="screen" id="s-settings">
-      <div class="card">
-        <div class="slbl" style="margin-top:0">Active machine</div>
-        <div style="display:flex;gap:8px;margin-bottom:14px">
-          <button class="person-btn" id="machine-3400" onclick="setMachine('3400')">LineLazer 3400</button>
-          <button class="person-btn" id="machine-5900" onclick="setMachine('5900')">LineLazer 5900</button>
-        </div>
-        <div id="mil-section" style="display:none">
-          <div class="slbl">Mil thickness (5900)</div>
-          <input id="set-mil" type="number" min="5" max="25" step="1" placeholder="15" oninput="saveSettings()" style="width:100%;font-size:14px;padding:9px 11px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif"/>
-          <div style="font-size:11px;color:#888;margin-top:4px">Industry typical: 15 mil for new, 10-13 for restripe</div>
-        </div>
-        <div class="slbl">Coverage per 5-gallon bucket</div>
-        <div class="fg"><label>Standard stalls (20 ft each)</label><input id="set-stalls" type="number" min="0" placeholder="100" oninput="saveSettings()"/></div>
-        <div class="fg"><label>ADA stalls</label><input id="set-ada" type="number" min="0" placeholder="16" oninput="saveSettings()"/></div>
-        <div class="fg"><label>Arrows</label><input id="set-arrows" type="number" min="0" placeholder="200" oninput="saveSettings()"/></div>
-        <div class="fg"><label>Curb (linear feet)</label><input id="set-curb" type="number" min="0" placeholder="2000" oninput="saveSettings()"/></div>
-        <div style="font-size:11px;color:#888;margin-top:8px;line-height:1.5">These numbers are estimates. Track actual paint used vs estimated on each job and adjust here to dial it in.</div>
-      </div>
-    </div>
-    <div class="screen" id="s-checklist">
+<div class="screen" id="s-checklist">
       <div class="card">
         <div class="slbl" style="margin-top:0">Paint &amp; materials</div>
         <div class="crow2"><input type="checkbox" id="c1" onchange="ck(this)"/><label class="clbl" for="c1">Paint loaded</label><span class="ccat">Materials</span></div>
@@ -496,79 +452,9 @@ function renderTasks(){
     });
   });
 }
-let appSettings={machine:'3400',mil:15,stallsCov:100,adaCov:16,arrowsCov:200,curbCov:2000};
 db.collection("settings").doc("main").onSnapshot(doc=>{
-  if(doc.exists){
-    const d=doc.data();
-    if(d.bankBalance!==undefined)document.getElementById('bank-disp').textContent=fmt(d.bankBalance);
-    if(d.machine)appSettings.machine=d.machine;
-    if(d.mil!==undefined)appSettings.mil=d.mil;
-    if(d.stallsCov!==undefined)appSettings.stallsCov=d.stallsCov;
-    if(d.adaCov!==undefined)appSettings.adaCov=d.adaCov;
-    if(d.arrowsCov!==undefined)appSettings.arrowsCov=d.arrowsCov;
-    if(d.curbCov!==undefined)appSettings.curbCov=d.curbCov;
-    refreshSettingsUI();
-  }
+  if(doc.exists){const d=doc.data();if(d.bankBalance!==undefined)document.getElementById('bank-disp').textContent=fmt(d.bankBalance);}
 });
-function refreshSettingsUI(){
-  const m3=document.getElementById('machine-3400'),m5=document.getElementById('machine-5900');
-  if(m3&&m5){m3.classList.toggle('active',appSettings.machine==='3400');m5.classList.toggle('active',appSettings.machine==='5900');}
-  const milSec=document.getElementById('mil-section');
-  if(milSec)milSec.style.display=appSettings.machine==='5900'?'block':'none';
-  const setMil=document.getElementById('set-mil');if(setMil)setMil.value=appSettings.mil;
-  const setStalls=document.getElementById('set-stalls');if(setStalls)setStalls.value=appSettings.stallsCov;
-  const setAda=document.getElementById('set-ada');if(setAda)setAda.value=appSettings.adaCov;
-  const setArrows=document.getElementById('set-arrows');if(setArrows)setArrows.value=appSettings.arrowsCov;
-  const setCurb=document.getElementById('set-curb');if(setCurb)setCurb.value=appSettings.curbCov;
-}
-function setMachine(m){
-  appSettings.machine=m;
-  refreshSettingsUI();
-  saveSettings();
-}
-function saveSettings(){
-  const setMil=document.getElementById('set-mil');
-  const setStalls=document.getElementById('set-stalls');
-  const setAda=document.getElementById('set-ada');
-  const setArrows=document.getElementById('set-arrows');
-  const setCurb=document.getElementById('set-curb');
-  if(setMil)appSettings.mil=parseFloat(setMil.value)||15;
-  if(setStalls)appSettings.stallsCov=parseFloat(setStalls.value)||100;
-  if(setAda)appSettings.adaCov=parseFloat(setAda.value)||16;
-  if(setArrows)appSettings.arrowsCov=parseFloat(setArrows.value)||200;
-  if(setCurb)appSettings.curbCov=parseFloat(setCurb.value)||2000;
-  db.collection("settings").doc("main").set({machine:appSettings.machine,mil:appSettings.mil,stallsCov:appSettings.stallsCov,adaCov:appSettings.adaCov,arrowsCov:appSettings.arrowsCov,curbCov:appSettings.curbCov},{merge:true});
-}
-function recalculate(){
-  const stalls=parseInt(document.getElementById('calc-stalls').value)||0;
-  const ada=parseInt(document.getElementById('calc-ada').value)||0;
-  const arrows=parseInt(document.getElementById('calc-arrows').value)||0;
-  const curb=parseInt(document.getElementById('calc-curb').value)||0;
-  if(stalls===0&&ada===0&&arrows===0&&curb===0){document.getElementById('calc-result').style.display='none';return;}
-  let mult=1;
-  if(appSettings.machine==='5900'){mult=15/Math.max(appSettings.mil,1);}
-  const yellowFt=stalls/Math.max(appSettings.stallsCov*mult,1)+arrows/Math.max(appSettings.arrowsCov*mult,1)+curb/Math.max(appSettings.curbCov*mult,1);
-  const blueFt=ada/Math.max(appSettings.adaCov*mult,1);
-  const yellow=Math.ceil(yellowFt);
-  const blue=Math.ceil(blueFt);
-  let html='';
-  if(yellow>0)html+='<div class="calc-result-row"><span>Yellow</span><div class="pi"><div class="pd py"></div><span class="pv">'+yellow+'</span><span class="pu">bkt</span></div></div>';
-  if(blue>0)html+='<div class="calc-result-row"><span>Blue (ADA)</span><div class="pi"><div class="pd pb2"></div><span class="pv">'+blue+'</span><span class="pu">bkt</span></div></div>';
-  document.getElementById('calc-result-content').innerHTML=html;
-  document.getElementById('calc-result').style.display='block';
-}
-function useCalculatedAmount(){
-  const stalls=parseInt(document.getElementById('calc-stalls').value)||0;
-  const ada=parseInt(document.getElementById('calc-ada').value)||0;
-  const arrows=parseInt(document.getElementById('calc-arrows').value)||0;
-  const curb=parseInt(document.getElementById('calc-curb').value)||0;
-  let mult=1;
-  if(appSettings.machine==='5900'){mult=15/Math.max(appSettings.mil,1);}
-  const yellowFt=stalls/Math.max(appSettings.stallsCov*mult,1)+arrows/Math.max(appSettings.arrowsCov*mult,1)+curb/Math.max(appSettings.curbCov*mult,1);
-  const blueFt=ada/Math.max(appSettings.adaCov*mult,1);
-  document.getElementById('nj-py').value=Math.ceil(yellowFt)||'';
-  document.getElementById('nj-pb').value=Math.ceil(blueFt)||'';
-}
 function ck(cb){cb.nextElementSibling.classList.toggle('done',cb.checked);}
 function resetCL(){document.querySelectorAll('#s-checklist input[type=checkbox]').forEach(cb=>{cb.checked=false;if(cb.nextElementSibling)cb.nextElementSibling.classList.remove('done');});}
 </script>
