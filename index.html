@@ -168,6 +168,15 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
       <div class="card">
         <div class="fg"><label>Client / location name</label><input id="nj-name" placeholder="e.g. Walmart on Main St"/></div>
         <div class="fg"><label>Address</label><input id="nj-addr" placeholder="123 Main St, Williston ND"/></div>
+        <div class="fg"><label>Surface type</label>
+          <select id="nj-surface" onchange="document.getElementById('nj-surface-other').style.display=this.value==='other'?'block':'none'">
+            <option value="">-- Select surface --</option>
+            <option value="pavement">Pavement (asphalt)</option>
+            <option value="concrete">Concrete</option>
+            <option value="other">Other</option>
+          </select>
+          <input id="nj-surface-other" placeholder="Specify other surface" style="display:none;margin-top:6px"/>
+        </div>
         <div class="fg2">
           <div class="fg" style="margin:0"><label>Date</label><input id="nj-date" type="date"/></div>
           <div class="fg" style="margin:0"><label>Job value ($)</label><input id="nj-value" type="number" placeholder="0.00"/></div>
@@ -208,6 +217,15 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
       <div class="card">
         <div class="fg"><label>Client / location name</label><input id="ej-name" placeholder="e.g. Walmart on Main St"/></div>
         <div class="fg"><label>Address</label><input id="ej-addr" placeholder="123 Main St, Williston ND"/></div>
+        <div class="fg"><label>Surface type</label>
+          <select id="ej-surface" onchange="document.getElementById('ej-surface-other').style.display=this.value==='other'?'block':'none'">
+            <option value="">-- Select surface --</option>
+            <option value="pavement">Pavement (asphalt)</option>
+            <option value="concrete">Concrete</option>
+            <option value="other">Other</option>
+          </select>
+          <input id="ej-surface-other" placeholder="Specify other surface" style="display:none;margin-top:6px"/>
+        </div>
         <div class="fg2">
           <div class="fg" style="margin:0"><label>Date</label><input id="ej-date" type="date"/></div>
           <div class="fg" style="margin:0"><label>Job value ($)</label><input id="ej-value" type="number" placeholder="0.00"/></div>
@@ -350,7 +368,7 @@ function renderDetail(){
     '<span style="font-size:12px;color:#888">'+(fmtd(j.date)||'No date set')+'</span></div>'+
     '<div class="mbig">'+fmt(j.value)+'</div><div class="msmall">Job value</div>'+
     '<div class="drow" style="margin-top:10px"><span class="dlbl">Address</span><span class="dval">'+(j.addr||'&mdash;')+'</span></div>'+
-    '<div class="drow"><span class="dlbl">Assigned</span><span class="dval">'+(j.assign||'&mdash;')+'</span></div>'+
+    '<div class="drow"><span class="dlbl">Assigned</span><span class="dval">'+(j.assign||'&mdash;')+'</span></div>'+(j.surface?'<div class="drow"><span class="dlbl">Surface</span><span class="dval" style="text-transform:capitalize">'+j.surface+'</span></div>':'')+
     (ph?'<div class="drow"><span class="dlbl">Paint</span><div class="prow">'+ph+'</div></div>':'')+
     (j.stencils?'<div class="drow"><span class="dlbl">Stencils</span><span class="dval">'+j.stencils+'</span></div>':'')+
     (j.equip?'<div class="drow"><span class="dlbl">Equip.</span><span class="dval">'+j.equip+'</span></div>':'')+
@@ -392,6 +410,11 @@ function openEdit(id){
   const j=jobs.find(x=>x.id===id);if(!j)return;
   document.getElementById('ej-name').value=j.name||'';
   document.getElementById('ej-addr').value=j.addr||'';
+  const surfaceSel=document.getElementById('ej-surface');
+  const surfaceOther=document.getElementById('ej-surface-other');
+  if(j.surface==='pavement'||j.surface==='concrete'){surfaceSel.value=j.surface;surfaceOther.style.display='none';surfaceOther.value='';}
+  else if(j.surface){surfaceSel.value='other';surfaceOther.style.display='block';surfaceOther.value=j.surface;}
+  else{surfaceSel.value='';surfaceOther.style.display='none';surfaceOther.value='';}
   document.getElementById('ej-date').value=j.date||'';
   document.getElementById('ej-value').value=j.value||'';
   document.getElementById('ej-py').value=j.py||'';
@@ -408,15 +431,22 @@ function openEdit(id){
 function deleteJob(id){if(!confirm('Delete this job? This cannot be undone.'))return;db.collection("projects").doc(id).delete();goBack();}
 document.getElementById('save-job-btn').addEventListener('click',()=>{
   const name=document.getElementById('nj-name').value.trim();if(!name){alert('Please enter a job name.');return;}
-  db.collection("projects").add({name,addr:document.getElementById('nj-addr').value.trim(),date:document.getElementById('nj-date').value,value:parseFloat(document.getElementById('nj-value').value)||0,py:parseInt(document.getElementById('nj-py').value)||0,pw:parseInt(document.getElementById('nj-pw').value)||0,pb:parseInt(document.getElementById('nj-pb').value)||0,pr:parseInt(document.getElementById('nj-pr').value)||0,stencils:document.getElementById('nj-stencils').value.trim(),equip:document.getElementById('nj-equip').value.trim(),assign:document.getElementById('nj-assign').value,status:document.getElementById('nj-status').value,notes:document.getElementById('nj-notes').value.trim(),updates:[],todos:[],expenses:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  ['nj-name','nj-addr','nj-date','nj-value','nj-py','nj-pw','nj-pb','nj-pr','nj-stencils','nj-equip','nj-notes'].forEach(id=>document.getElementById(id).value='');
+  const surfaceVal=document.getElementById('nj-surface').value;
+  const surfaceOther=document.getElementById('nj-surface-other').value.trim();
+  const surface=surfaceVal==='other'?surfaceOther:surfaceVal;
+  db.collection("projects").add({name,addr:document.getElementById('nj-addr').value.trim(),surface,date:document.getElementById('nj-date').value,value:parseFloat(document.getElementById('nj-value').value)||0,py:parseInt(document.getElementById('nj-py').value)||0,pw:parseInt(document.getElementById('nj-pw').value)||0,pb:parseInt(document.getElementById('nj-pb').value)||0,pr:parseInt(document.getElementById('nj-pr').value)||0,stencils:document.getElementById('nj-stencils').value.trim(),equip:document.getElementById('nj-equip').value.trim(),assign:document.getElementById('nj-assign').value,status:document.getElementById('nj-status').value,notes:document.getElementById('nj-notes').value.trim(),updates:[],todos:[],expenses:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  ['nj-name','nj-addr','nj-date','nj-value','nj-py','nj-pw','nj-pb','nj-pr','nj-stencils','nj-equip','nj-notes','nj-surface','nj-surface-other'].forEach(id=>document.getElementById(id).value='');document.getElementById('nj-surface-other').style.display='none';
   goBack();
 });
 document.getElementById('save-edit-btn').addEventListener('click',()=>{
   const name=document.getElementById('ej-name').value.trim();if(!name){alert('Please enter a job name.');return;}
+  const eSurfaceVal=document.getElementById('ej-surface').value;
+  const eSurfaceOther=document.getElementById('ej-surface-other').value.trim();
+  const eSurface=eSurfaceVal==='other'?eSurfaceOther:eSurfaceVal;
   db.collection("projects").doc(activeJobId).update({
     name,
     addr:document.getElementById('ej-addr').value.trim(),
+    surface:eSurface,
     date:document.getElementById('ej-date').value,
     value:parseFloat(document.getElementById('ej-value').value)||0,
     py:parseInt(document.getElementById('ej-py').value)||0,
