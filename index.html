@@ -135,6 +135,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
         <div class="sc"><div class="sn" id="h-active">0</div><div class="sl">Active jobs</div></div>
         <div class="sc"><div class="sn" id="h-pending">0</div><div class="sl">Pending jobs</div></div>
         <div class="sc"><div class="sn" id="h-quoted">0</div><div class="sl">Quoted jobs</div></div>
+        <div class="sc wide"><div class="sn" id="ytd-disp">$0.00</div><div class="sl">YTD revenue (completed)</div></div>
         <div class="sc wide" onclick="toggleEdit('bank')"><div class="sn" id="bank-disp">$0.00</div><div class="sl">Bank account &#9998;</div></div>
         <div class="sc wide"><div class="sn" id="bids-disp">$0.00</div><div class="sl">Bids out / unrealized (auto)</div></div>
       </div>
@@ -145,6 +146,10 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
     </div>
     <div class="screen" id="s-jobs">
       <button class="addbtn" onclick="goTo('newjob','New job')">+ New job</button>
+      <div style="position:relative;margin-bottom:10px">
+        <input id="job-search" type="search" placeholder="Search jobs..." oninput="renderJobs()" style="width:100%;font-size:14px;padding:10px 12px 10px 36px;border-radius:10px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif"/>
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#aaa;font-size:14px">&#128269;</span>
+      </div>
       <div class="sort-bar">
         <button class="srtbtn active" onclick="setFilter(this,'all')">All</button>
         <button class="srtbtn" onclick="setFilter(this,'active')">Active</button>
@@ -167,6 +172,11 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
             <option value="other">Other</option>
           </select>
           <input id="nj-surface-other" placeholder="Specify other surface" style="display:none;margin-top:6px"/>
+        </div>
+        <div class="fg"><label>Customer contact name</label><input id="nj-contact" placeholder="e.g. John Smith"/></div>
+        <div class="fg2">
+          <div class="fg" style="margin:0"><label>Phone</label><input id="nj-phone" type="tel" placeholder="555-123-4567"/></div>
+          <div class="fg" style="margin:0"><label>Email</label><input id="nj-email" type="email" placeholder="customer@email.com"/></div>
         </div>
         <div class="fg2">
           <div class="fg" style="margin:0"><label>Date</label><input id="nj-date" type="date"/></div>
@@ -201,6 +211,11 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
             <option value="other">Other</option>
           </select>
           <input id="ej-surface-other" placeholder="Specify other surface" style="display:none;margin-top:6px"/>
+        </div>
+        <div class="fg"><label>Customer contact name</label><input id="ej-contact" placeholder="e.g. John Smith"/></div>
+        <div class="fg2">
+          <div class="fg" style="margin:0"><label>Phone</label><input id="ej-phone" type="tel" placeholder="555-123-4567"/></div>
+          <div class="fg" style="margin:0"><label>Email</label><input id="ej-email" type="email" placeholder="customer@email.com"/></div>
         </div>
         <div class="fg2">
           <div class="fg" style="margin:0"><label>Date</label><input id="ej-date" type="date"/></div>
@@ -284,7 +299,7 @@ function toggleEdit(w){
   db.collection("settings").doc("main").set({bankBalance:v},{merge:true});
 }
 function saveMoney(w){const v=parseFloat(document.getElementById('inp-'+w).value.replace(/[^0-9.]/g,''));if(isNaN(v))return;document.getElementById(w+'-disp').textContent=fmt(v);document.getElementById('edit-'+w).style.display='none';document.getElementById('inp-'+w).value='';}
-function updateStats(){const a=jobs.filter(j=>j.status==='active').length,p=jobs.filter(j=>j.status==='pending').length,q=jobs.filter(j=>j.status==='quoted').length;document.getElementById('h-active').textContent=a;document.getElementById('h-pending').textContent=p;document.getElementById('h-quoted').textContent=q;document.getElementById('jobs-sub').textContent=a+' active · '+p+' pending';const bids=jobs.filter(j=>j.status==='quoted').reduce((s,j)=>s+(j.value||0),0);document.getElementById('bids-disp').textContent=fmt(bids);}
+function updateStats(){const a=jobs.filter(j=>j.status==='active').length,p=jobs.filter(j=>j.status==='pending').length,q=jobs.filter(j=>j.status==='quoted').length;document.getElementById('h-active').textContent=a;document.getElementById('h-pending').textContent=p;document.getElementById('h-quoted').textContent=q;document.getElementById('jobs-sub').textContent=a+' active · '+p+' pending';const bids=jobs.filter(j=>j.status==='quoted').reduce((s,j)=>s+(j.value||0),0);document.getElementById('bids-disp').textContent=fmt(bids);const yr=new Date().getFullYear();const ytd=jobs.filter(j=>j.status==='done'&&j.date&&j.date.startsWith(yr+'')).reduce((s,j)=>s+(j.value||0),0);document.getElementById('ytd-disp').textContent=fmt(ytd);}
 function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-'+s).classList.add('active');}
 function goTo(s,t){showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='block';navStack.push({s,t});if(s==='jobs')renderJobs();}
 function tabTo(el,s,t){document.querySelectorAll('.titem').forEach(x=>x.classList.remove('active'));el.classList.add('active');showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='none';navStack=[];if(s==='jobs')renderJobs();if(s==='tasks')renderTasks();}
@@ -294,10 +309,13 @@ function renderJobs(){
   const el=document.getElementById('job-list');
   const order={active:0,pending:1,quoted:2,done:3};
   let shown=activeFilter==='all'?[...jobs]:jobs.filter(j=>j.status===activeFilter);
+  const searchInput=document.getElementById('job-search');
+  const q=searchInput?searchInput.value.trim().toLowerCase():'';
+  if(q){shown=shown.filter(j=>(j.name||'').toLowerCase().includes(q)||(j.addr||'').toLowerCase().includes(q)||(j.contact||'').toLowerCase().includes(q));}
   if(activeFilter==='all')shown.sort((a,b)=>(order[a.status]||0)-(order[b.status]||0));
   const cnt=document.getElementById('job-count');
-  if(cnt)cnt.textContent=shown.length===jobs.length?jobs.length+' jobs total':shown.length+' of '+jobs.length+' jobs';
-  if(!shown.length){el.innerHTML='<div class="empty">No '+(activeFilter==='all'?'jobs':activeFilter+' jobs')+' yet.</div>';return;}
+  if(cnt)cnt.textContent=q?shown.length+' match'+(shown.length===1?'':'es')+' for "'+q+'"':(shown.length===jobs.length?jobs.length+' jobs total':shown.length+' of '+jobs.length+' jobs');
+  if(!shown.length){el.innerHTML='<div class="empty">'+(q?'No jobs match "'+q+'".':'No '+(activeFilter==='all'?'jobs':activeFilter+' jobs')+' yet.')+'</div>';return;}
   const sl={active:'Active',pending:'Pending',quoted:'Quoted',done:'Completed'};
   const bc={active:'ba',pending:'bp',quoted:'bq',done:'bd'};
   el.innerHTML=shown.map(j=>'<div class="jcard" data-id="'+j.id+'"><div class="jrow"><span class="jname">'+j.name+'</span><span class="bdg '+(bc[j.status]||'bq')+'">'+(sl[j.status]||j.status)+'</span></div><div class="jmeta">'+(j.addr||'')+(j.date?' · '+fmtd(j.date):'')+(j.assign?' · '+j.assign:'')+'</div></div>').join('');
@@ -325,6 +343,9 @@ function renderDetail(){
     '<div class="mbig">'+fmt(j.value)+'</div><div class="msmall">Job value</div>'+
     '<div class="drow" style="margin-top:10px"><span class="dlbl">Address</span><span class="dval">'+(j.addr||'&mdash;')+'</span></div>'+
     '<div class="drow"><span class="dlbl">Assigned</span><span class="dval">'+(j.assign||'&mdash;')+'</span></div>'+(j.surface?'<div class="drow"><span class="dlbl">Surface</span><span class="dval" style="text-transform:capitalize">'+j.surface+'</span></div>':'')+
+    (j.contact?'<div class="drow"><span class="dlbl">Contact</span><span class="dval">'+j.contact+'</span></div>':'')+
+    (j.phone?'<div class="drow"><span class="dlbl">Phone</span><a href="tel:'+j.phone+'" class="dval" style="color:#185FA5;text-decoration:none;font-weight:700">'+j.phone+' &#128222;</a></div>':'')+
+    (j.email?'<div class="drow"><span class="dlbl">Email</span><a href="mailto:'+j.email+'" class="dval" style="color:#185FA5;text-decoration:none;font-weight:700;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">'+j.email+' &#9993;</a></div>':'')+
     (ph?'<div class="drow"><span class="dlbl">Paint</span><div class="prow">'+ph+'</div></div>':'')+
     (j.stencils?'<div class="drow"><span class="dlbl">Stencils</span><span class="dval">'+j.stencils+'</span></div>':'')+
     (j.equip?'<div class="drow"><span class="dlbl">Equip.</span><span class="dval">'+j.equip+'</span></div>':'')+
@@ -371,6 +392,9 @@ function openEdit(id){
   if(j.surface==='pavement'||j.surface==='concrete'){surfaceSel.value=j.surface;surfaceOther.style.display='none';surfaceOther.value='';}
   else if(j.surface){surfaceSel.value='other';surfaceOther.style.display='block';surfaceOther.value=j.surface;}
   else{surfaceSel.value='';surfaceOther.style.display='none';surfaceOther.value='';}
+  document.getElementById('ej-contact').value=j.contact||'';
+  document.getElementById('ej-phone').value=j.phone||'';
+  document.getElementById('ej-email').value=j.email||'';
   document.getElementById('ej-date').value=j.date||'';
   document.getElementById('ej-value').value=j.value||'';
   document.getElementById('ej-py').value=j.py||'';
@@ -390,8 +414,8 @@ document.getElementById('save-job-btn').addEventListener('click',()=>{
   const surfaceVal=document.getElementById('nj-surface').value;
   const surfaceOther=document.getElementById('nj-surface-other').value.trim();
   const surface=surfaceVal==='other'?surfaceOther:surfaceVal;
-  db.collection("projects").add({name,addr:document.getElementById('nj-addr').value.trim(),surface,date:document.getElementById('nj-date').value,value:parseFloat(document.getElementById('nj-value').value)||0,py:parseInt(document.getElementById('nj-py').value)||0,pw:parseInt(document.getElementById('nj-pw').value)||0,pb:parseInt(document.getElementById('nj-pb').value)||0,pr:parseInt(document.getElementById('nj-pr').value)||0,stencils:document.getElementById('nj-stencils').value.trim(),equip:document.getElementById('nj-equip').value.trim(),assign:document.getElementById('nj-assign').value,status:document.getElementById('nj-status').value,notes:document.getElementById('nj-notes').value.trim(),updates:[],todos:[],expenses:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  ['nj-name','nj-addr','nj-date','nj-value','nj-py','nj-pw','nj-pb','nj-pr','nj-stencils','nj-equip','nj-notes','nj-surface','nj-surface-other'].forEach(id=>document.getElementById(id).value='');document.getElementById('nj-surface-other').style.display='none';
+  db.collection("projects").add({name,addr:document.getElementById('nj-addr').value.trim(),surface,contact:document.getElementById('nj-contact').value.trim(),phone:document.getElementById('nj-phone').value.trim(),email:document.getElementById('nj-email').value.trim(),date:document.getElementById('nj-date').value,value:parseFloat(document.getElementById('nj-value').value)||0,py:parseInt(document.getElementById('nj-py').value)||0,pw:parseInt(document.getElementById('nj-pw').value)||0,pb:parseInt(document.getElementById('nj-pb').value)||0,pr:parseInt(document.getElementById('nj-pr').value)||0,stencils:document.getElementById('nj-stencils').value.trim(),equip:document.getElementById('nj-equip').value.trim(),assign:document.getElementById('nj-assign').value,status:document.getElementById('nj-status').value,notes:document.getElementById('nj-notes').value.trim(),updates:[],todos:[],expenses:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  ['nj-name','nj-addr','nj-date','nj-value','nj-py','nj-pw','nj-pb','nj-pr','nj-stencils','nj-equip','nj-notes','nj-surface','nj-surface-other','nj-contact','nj-phone','nj-email'].forEach(id=>document.getElementById(id).value='');document.getElementById('nj-surface-other').style.display='none';
   goBack();
 });
 document.getElementById('save-edit-btn').addEventListener('click',()=>{
@@ -403,6 +427,9 @@ document.getElementById('save-edit-btn').addEventListener('click',()=>{
     name,
     addr:document.getElementById('ej-addr').value.trim(),
     surface:eSurface,
+    contact:document.getElementById('ej-contact').value.trim(),
+    phone:document.getElementById('ej-phone').value.trim(),
+    email:document.getElementById('ej-email').value.trim(),
     date:document.getElementById('ej-date').value,
     value:parseFloat(document.getElementById('ej-value').value)||0,
     py:parseInt(document.getElementById('ej-py').value)||0,
