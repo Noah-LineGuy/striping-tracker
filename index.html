@@ -120,6 +120,19 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
 .person-btn.active{background:#ffc60b;color:#111;border-color:#ffc60b}
 .task-job-header{font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid #ffc60b}
 .task-job-header:first-child{margin-top:0}
+.estimate-row{padding:12px 0;border-bottom:1px solid #f0f0f0}
+.estimate-row:last-of-type{border-bottom:none}
+.estimate-label{font-size:13px;font-weight:700;color:#111;margin-bottom:8px}
+.estimate-inputs{display:flex;align-items:center;gap:6px}
+.estimate-inputs input{flex:1;min-width:0;font-size:13px;padding:7px 9px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif}
+.estimate-x{color:#888;font-size:14px;font-weight:700}
+.estimate-eq{color:#888;font-size:14px;font-weight:700}
+.estimate-line-total{font-size:13px;font-weight:700;color:#111;min-width:65px;text-align:right}
+.dollar-input{position:relative;flex:1;min-width:0;display:flex;align-items:center}
+.dollar-input span{position:absolute;left:9px;color:#888;font-size:13px;pointer-events:none}
+.dollar-input input{padding-left:18px;width:100%}
+.estimate-grand-total{display:flex;justify-content:space-between;align-items:center;padding-top:14px;margin-top:6px;border-top:2px solid #ffc60b;font-size:18px;font-weight:700;color:#111}
+#est-grand-total{font-size:22px;color:#185FA5}
 
 </style>
 </head>
@@ -270,7 +283,8 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
     <div class="titem active" id="t-home" onclick="tabTo(this,'home','THE LINE GUYS')">&#127968; Home</div>
     <div class="titem" id="t-jobs" onclick="tabTo(this,'jobs','Jobs')">&#128203; Jobs</div>
     <div class="titem" id="t-tasks" onclick="tabTo(this,'tasks','Tasks')">&#9989; Tasks</div>
-    <div class="titem" id="t-checklist" onclick="tabTo(this,'checklist','Checklist')">&#9744; Checklist</div>
+    <div class="titem" id="t-estimate" onclick="tabTo(this,'estimate','Quick estimate')">&#128181; Quote</div>
+    <div class="titem" id="t-checklist" onclick="tabTo(this,'checklist','Checklist')">&#9744; List</div>
   </div>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -482,6 +496,26 @@ function renderTasks(){
 db.collection("settings").doc("main").onSnapshot(doc=>{
   if(doc.exists){const d=doc.data();if(d.bankBalance!==undefined)document.getElementById('bank-disp').textContent=fmt(d.bankBalance);}
 });
+function calculateEstimate(){
+  const items=['stalls','ada','arrows','curb'];
+  let grand=0;
+  items.forEach(item=>{
+    const qty=parseFloat(document.getElementById('est-qty-'+item).value)||0;
+    const price=parseFloat(document.getElementById('est-price-'+item).value)||0;
+    const total=qty*price;
+    document.getElementById('est-total-'+item).textContent=fmt(total);
+    grand+=total;
+  });
+  document.getElementById('est-grand-total').textContent=fmt(grand);
+}
+function clearEstimate(){
+  ['stalls','ada','arrows','curb'].forEach(item=>{
+    document.getElementById('est-qty-'+item).value='';
+    document.getElementById('est-price-'+item).value='';
+    document.getElementById('est-total-'+item).textContent='$0.00';
+  });
+  document.getElementById('est-grand-total').textContent='$0.00';
+}
 function ck(cb){cb.nextElementSibling.classList.toggle('done',cb.checked);}
 function resetCL(){document.querySelectorAll('#s-checklist input[type=checkbox]').forEach(cb=>{cb.checked=false;if(cb.nextElementSibling)cb.nextElementSibling.classList.remove('done');});}
 </script>
