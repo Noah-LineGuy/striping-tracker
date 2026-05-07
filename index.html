@@ -257,7 +257,68 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
       </div>
       <div id="tasks-list"><div class="empty">Select a person above to see their tasks.</div></div>
     </div>
-<div class="screen" id="s-checklist">
+<div class="screen" id="s-estimate">
+      <div class="card">
+        <div class="slbl" style="margin-top:0">Quick estimate builder</div>
+        <div style="font-size:11px;color:#888;margin-bottom:12px">Punch in counts and prices for a fast on-site quote</div>
+        <div class="estimate-row">
+          <div class="estimate-label">Standard stalls</div>
+          <div class="estimate-inputs">
+            <input type="number" min="0" placeholder="Qty" id="est-qty-stalls" oninput="calculateEstimate()"/>
+            <span class="estimate-x">&times;</span>
+            <div class="dollar-input"><span>$</span><input type="number" min="0" step="0.01" placeholder="Price" id="est-price-stalls" oninput="calculateEstimate()"/></div>
+            <span class="estimate-eq">=</span>
+            <span class="estimate-line-total" id="est-total-stalls">$0.00</span>
+          </div>
+        </div>
+        <div class="estimate-row">
+          <div class="estimate-label">ADA stalls</div>
+          <div class="estimate-inputs">
+            <input type="number" min="0" placeholder="Qty" id="est-qty-ada" oninput="calculateEstimate()"/>
+            <span class="estimate-x">&times;</span>
+            <div class="dollar-input"><span>$</span><input type="number" min="0" step="0.01" placeholder="Price" id="est-price-ada" oninput="calculateEstimate()"/></div>
+            <span class="estimate-eq">=</span>
+            <span class="estimate-line-total" id="est-total-ada">$0.00</span>
+          </div>
+        </div>
+        <div class="estimate-row">
+          <div class="estimate-label">Arrows</div>
+          <div class="estimate-inputs">
+            <input type="number" min="0" placeholder="Qty" id="est-qty-arrows" oninput="calculateEstimate()"/>
+            <span class="estimate-x">&times;</span>
+            <div class="dollar-input"><span>$</span><input type="number" min="0" step="0.01" placeholder="Price" id="est-price-arrows" oninput="calculateEstimate()"/></div>
+            <span class="estimate-eq">=</span>
+            <span class="estimate-line-total" id="est-total-arrows">$0.00</span>
+          </div>
+        </div>
+        <div class="estimate-row">
+          <div class="estimate-label">Curb (linear ft)</div>
+          <div class="estimate-inputs">
+            <input type="number" min="0" placeholder="Qty" id="est-qty-curb" oninput="calculateEstimate()"/>
+            <span class="estimate-x">&times;</span>
+            <div class="dollar-input"><span>$</span><input type="number" min="0" step="0.01" placeholder="Price" id="est-price-curb" oninput="calculateEstimate()"/></div>
+            <span class="estimate-eq">=</span>
+            <span class="estimate-line-total" id="est-total-curb">$0.00</span>
+          </div>
+        </div>
+        <div class="estimate-row">
+          <div class="estimate-label"><input type="text" placeholder="Other (describe)" id="est-other-label" style="width:100%;font-size:13px;font-weight:700;padding:6px 9px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#111;font-family:Arial,sans-serif"/></div>
+          <div class="estimate-inputs">
+            <input type="number" min="0" placeholder="Qty" id="est-qty-other" oninput="calculateEstimate()"/>
+            <span class="estimate-x">&times;</span>
+            <div class="dollar-input"><span>$</span><input type="number" min="0" step="0.01" placeholder="Price" id="est-price-other" oninput="calculateEstimate()"/></div>
+            <span class="estimate-eq">=</span>
+            <span class="estimate-line-total" id="est-total-other">$0.00</span>
+          </div>
+        </div>
+        <div class="estimate-grand-total">
+          <span>Estimate total</span>
+          <span id="est-grand-total">$0.00</span>
+        </div>
+        <button class="rst" style="margin-top:14px" onclick="clearEstimate()">Clear all</button>
+      </div>
+    </div>
+    <div class="screen" id="s-checklist">
       <div class="card">
         <div class="slbl" style="margin-top:0">Paint &amp; materials</div>
         <div class="crow2"><input type="checkbox" id="c1" onchange="ck(this)"/><label class="clbl" for="c1">Paint loaded</label><span class="ccat">Materials</span></div>
@@ -313,7 +374,7 @@ function toggleEdit(w){
   db.collection("settings").doc("main").set({bankBalance:v},{merge:true});
 }
 function saveMoney(w){const v=parseFloat(document.getElementById('inp-'+w).value.replace(/[^0-9.]/g,''));if(isNaN(v))return;document.getElementById(w+'-disp').textContent=fmt(v);document.getElementById('edit-'+w).style.display='none';document.getElementById('inp-'+w).value='';}
-function updateStats(){const a=jobs.filter(j=>j.status==='active').length,p=jobs.filter(j=>j.status==='pending').length,q=jobs.filter(j=>j.status==='quoted').length;document.getElementById('h-active').textContent=a;document.getElementById('h-pending').textContent=p;document.getElementById('h-quoted').textContent=q;document.getElementById('jobs-sub').textContent=a+' active · '+p+' pending';const bids=jobs.filter(j=>j.status==='quoted').reduce((s,j)=>s+(j.value||0),0);document.getElementById('bids-disp').textContent=fmt(bids);const yr=new Date().getFullYear();const ytd=jobs.filter(j=>j.status==='done'&&j.date&&j.date.startsWith(yr+'')).reduce((s,j)=>s+(j.value||0),0);document.getElementById('ytd-disp').textContent=fmt(ytd);}
+function updateStats(){const a=jobs.filter(j=>j.status==='active').length,p=jobs.filter(j=>j.status==='pending').length,q=jobs.filter(j=>j.status==='quoted').length;document.getElementById('h-active').textContent=a;document.getElementById('h-pending').textContent=p;document.getElementById('h-quoted').textContent=q;document.getElementById('jobs-sub').textContent=a+' active · '+p+' pending';const bids=jobs.filter(j=>j.status==='quoted').reduce((s,j)=>s+(j.value||0),0);document.getElementById('bids-disp').textContent=fmt(bids);const yr=new Date().getFullYear();const ytd=jobs.filter(j=>{if(j.status!=='done')return false;let jobYr=null;if(j.completedAt&&j.completedAt.toDate)jobYr=j.completedAt.toDate().getFullYear();else if(j.date)jobYr=parseInt(j.date.split('-')[0]);else if(j.createdAt&&j.createdAt.toDate)jobYr=j.createdAt.toDate().getFullYear();return jobYr===yr;}).reduce((s,j)=>s+(j.value||0),0);document.getElementById('ytd-disp').textContent=fmt(ytd);}
 function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-'+s).classList.add('active');}
 function goTo(s,t){showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='block';navStack.push({s,t});if(s==='jobs')renderJobs();}
 function tabTo(el,s,t){document.querySelectorAll('.titem').forEach(x=>x.classList.remove('active'));el.classList.add('active');showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='none';navStack=[];if(s==='jobs')renderJobs();if(s==='tasks')renderTasks();}
@@ -391,7 +452,11 @@ function renderDetail(){
   document.querySelectorAll('.todo-cb').forEach(cb=>{cb.addEventListener('change',()=>toggleTodo(parseInt(cb.getAttribute('data-i')),cb.checked));});
 }
 function switchTab(name){document.querySelectorAll('.itab').forEach(t=>t.classList.remove('active'));document.getElementById('itab-'+name).classList.add('active');document.querySelectorAll('.isec').forEach(s=>s.classList.remove('active'));document.getElementById('isec-'+name).classList.add('active');}
-function changeStatus(val){db.collection("projects").doc(activeJobId).update({status:val});}
+function changeStatus(val){
+  const update={status:val};
+  if(val==='done'){update.completedAt=firebase.firestore.FieldValue.serverTimestamp();}
+  db.collection("projects").doc(activeJobId).update(update);
+}
 function addExpense(){const amt=parseFloat(document.getElementById('ex-amt').value);if(!amt||amt<=0)return;const j=jobs.find(x=>x.id===activeJobId);const expenses=[...(j.expenses||[]),{cat:document.getElementById('ex-cat').value,amt,desc:document.getElementById('ex-desc').value.trim()}];db.collection("projects").doc(activeJobId).update({expenses});document.getElementById('ex-amt').value='';document.getElementById('ex-desc').value='';}
 function delExpense(i){const j=jobs.find(x=>x.id===activeJobId);const expenses=[...(j.expenses||[])];expenses.splice(i,1);db.collection("projects").doc(activeJobId).update({expenses});}
 function addUpdate(){const txt=document.getElementById('upd-text').value.trim();if(!txt)return;const j=jobs.find(x=>x.id===activeJobId);const updates=[...(j.updates||[]),{who:document.getElementById('upd-who').value,time:nowStr(),text:txt}];db.collection("projects").doc(activeJobId).update({updates});document.getElementById('upd-text').value='';}
@@ -497,7 +562,7 @@ db.collection("settings").doc("main").onSnapshot(doc=>{
   if(doc.exists){const d=doc.data();if(d.bankBalance!==undefined)document.getElementById('bank-disp').textContent=fmt(d.bankBalance);}
 });
 function calculateEstimate(){
-  const items=['stalls','ada','arrows','curb'];
+  const items=['stalls','ada','arrows','curb','other'];
   let grand=0;
   items.forEach(item=>{
     const qty=parseFloat(document.getElementById('est-qty-'+item).value)||0;
@@ -509,11 +574,12 @@ function calculateEstimate(){
   document.getElementById('est-grand-total').textContent=fmt(grand);
 }
 function clearEstimate(){
-  ['stalls','ada','arrows','curb'].forEach(item=>{
+  ['stalls','ada','arrows','curb','other'].forEach(item=>{
     document.getElementById('est-qty-'+item).value='';
     document.getElementById('est-price-'+item).value='';
     document.getElementById('est-total-'+item).textContent='$0.00';
   });
+  document.getElementById('est-other-label').value='';
   document.getElementById('est-grand-total').textContent='$0.00';
 }
 function ck(cb){cb.nextElementSibling.classList.toggle('done',cb.checked);}
