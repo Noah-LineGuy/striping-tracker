@@ -133,6 +133,19 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
 .dollar-input input{padding-left:18px;width:100%}
 .estimate-grand-total{display:flex;justify-content:space-between;align-items:center;padding-top:14px;margin-top:6px;border-top:2px solid #ffc60b;font-size:18px;font-weight:700;color:#111}
 #est-grand-total{font-size:22px;color:#185FA5}
+.pl-entry{background:#f9f9f9;border-radius:10px;padding:11px;margin-bottom:8px;border-left:4px solid #ffc60b}
+.pl-entry.color-white{border-left-color:#aaa}
+.pl-entry.color-blue{border-left-color:#3b82f6}
+.pl-entry.color-red{border-left-color:#ef4444}
+.pl-entry-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.pl-entry-title{font-size:13px;font-weight:700;color:#111}
+.pl-entry-date{font-size:11px;color:#888}
+.pl-entry-body{font-size:12px;color:#333;line-height:1.6}
+.pl-entry-calc{background:#fff;border-radius:6px;padding:8px;margin-top:6px;font-size:12px}
+.pl-calc-row{display:flex;justify-content:space-between;padding:2px 0}
+.pl-calc-row strong{color:#185FA5}
+.pl-entry-del{background:none;border:none;color:#ccc;font-size:14px;cursor:pointer;padding:0 4px}
+.pl-entry-del:hover{color:#e74c3c}
 
 </style>
 </head>
@@ -151,6 +164,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
         <div class="sc wide"><div class="sn" id="ytd-disp">$0.00</div><div class="sl">YTD revenue (completed)</div></div>
         <div class="sc wide" onclick="toggleEdit('bank')"><div class="sn" id="bank-disp">$0.00</div><div class="sl">Bank account &#9998;</div></div>
         <div class="sc wide"><div class="sn" id="bids-disp">$0.00</div><div class="sl">Bids out / unrealized (auto)</div></div>
+        <div class="sc wide"><div class="sn" id="active-disp">$0.00</div><div class="sl">Active jobs value (auto)</div></div>
       </div>
       
       
@@ -257,7 +271,41 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
       </div>
       <div id="tasks-list"><div class="empty">Select a person above to see their tasks.</div></div>
     </div>
-<div class="screen" id="s-estimate">
+<div class="screen" id="s-paintlog">
+      <div class="card">
+        <div class="slbl" style="margin-top:0">New entry</div>
+        <div class="fg2">
+          <div class="fg" style="margin:0"><label>Job (optional)</label><input id="pl-job" placeholder="e.g. City Hall"/></div>
+          <div class="fg" style="margin:0"><label>Date</label><input id="pl-date" type="date"/></div>
+        </div>
+        <div class="fg2">
+          <div class="fg" style="margin:0"><label>Color</label>
+            <select id="pl-color"><option value="yellow">Yellow</option><option value="white">White</option><option value="blue">Blue</option><option value="red">Red</option></select>
+          </div>
+          <div class="fg" style="margin:0"><label></label><span></span></div>
+        </div>
+        <div class="fg2">
+          <div class="fg" style="margin:0"><label>Start depth (inches)</label><input id="pl-start" type="text" placeholder="e.g. 6 or 6 1/2"/></div>
+          <div class="fg" style="margin:0"><label>End depth (inches)</label><input id="pl-end" type="text" placeholder="e.g. 5 3/4"/></div>
+        </div>
+        <div class="slbl">What was painted</div>
+        <div class="fg2">
+          <div class="fg" style="margin:0"><label>Standard stalls</label><input id="pl-stalls" type="number" min="0" placeholder="0"/></div>
+          <div class="fg" style="margin:0"><label>ADA stalls</label><input id="pl-ada" type="number" min="0" placeholder="0"/></div>
+        </div>
+        <div class="fg2">
+          <div class="fg" style="margin:0"><label>Arrows</label><input id="pl-arrows" type="number" min="0" placeholder="0"/></div>
+          <div class="fg" style="margin:0"><label>Curb (linear ft)</label><input id="pl-curb" type="number" min="0" placeholder="0"/></div>
+        </div>
+        <div class="fg"><label>Notes (optional)</label><textarea id="pl-notes" rows="2" placeholder="Surface, weather, mil thickness, anything notable..."></textarea></div>
+        <button class="addbtn" style="margin-bottom:0" onclick="savePaintLog()">Save entry</button>
+      </div>
+      <div class="card">
+        <div class="slbl" style="margin-top:0">History</div>
+        <div id="pl-history"><div class="empty">No entries yet.</div></div>
+      </div>
+    </div>
+    <div class="screen" id="s-estimate">
       <div class="card">
         <div class="slbl" style="margin-top:0">Quick estimate builder</div>
         <div style="font-size:11px;color:#888;margin-bottom:12px">Punch in counts and prices for a fast on-site quote</div>
@@ -345,6 +393,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#111;-webkit-tap-high
     <div class="titem" id="t-jobs" onclick="tabTo(this,'jobs','Jobs')">&#128203; Jobs</div>
     <div class="titem" id="t-tasks" onclick="tabTo(this,'tasks','Tasks')">&#9989; Tasks</div>
     <div class="titem" id="t-estimate" onclick="tabTo(this,'estimate','Quick estimate')">&#128181; Quote</div>
+    <div class="titem" id="t-paintlog" onclick="tabTo(this,'paintlog','Paint usage log')">&#127912; Paint</div>
     <div class="titem" id="t-checklist" onclick="tabTo(this,'checklist','Checklist')">&#9744; List</div>
   </div>
 </div>
@@ -374,7 +423,7 @@ function toggleEdit(w){
   db.collection("settings").doc("main").set({bankBalance:v},{merge:true});
 }
 function saveMoney(w){const v=parseFloat(document.getElementById('inp-'+w).value.replace(/[^0-9.]/g,''));if(isNaN(v))return;document.getElementById(w+'-disp').textContent=fmt(v);document.getElementById('edit-'+w).style.display='none';document.getElementById('inp-'+w).value='';}
-function updateStats(){const a=jobs.filter(j=>j.status==='active').length,p=jobs.filter(j=>j.status==='pending').length,q=jobs.filter(j=>j.status==='quoted').length;document.getElementById('h-active').textContent=a;document.getElementById('h-pending').textContent=p;document.getElementById('h-quoted').textContent=q;document.getElementById('jobs-sub').textContent=a+' active · '+p+' pending';const bids=jobs.filter(j=>j.status==='quoted').reduce((s,j)=>s+(j.value||0),0);document.getElementById('bids-disp').textContent=fmt(bids);const yr=new Date().getFullYear();const ytd=jobs.filter(j=>{if(j.status!=='done')return false;let jobYr=null;if(j.completedAt&&j.completedAt.toDate)jobYr=j.completedAt.toDate().getFullYear();else if(j.date)jobYr=parseInt(j.date.split('-')[0]);else if(j.createdAt&&j.createdAt.toDate)jobYr=j.createdAt.toDate().getFullYear();return jobYr===yr;}).reduce((s,j)=>s+(j.value||0),0);document.getElementById('ytd-disp').textContent=fmt(ytd);}
+function updateStats(){const a=jobs.filter(j=>j.status==='active').length,p=jobs.filter(j=>j.status==='pending').length,q=jobs.filter(j=>j.status==='quoted').length;document.getElementById('h-active').textContent=a;document.getElementById('h-pending').textContent=p;document.getElementById('h-quoted').textContent=q;document.getElementById('jobs-sub').textContent=a+' active · '+p+' pending';const bids=jobs.filter(j=>j.status==='quoted').reduce((s,j)=>s+(j.value||0),0);document.getElementById('bids-disp').textContent=fmt(bids);const yr=new Date().getFullYear();const ytd=jobs.filter(j=>{if(j.status!=='done')return false;let jobYr=null;if(j.completedAt&&j.completedAt.toDate)jobYr=j.completedAt.toDate().getFullYear();else if(j.date)jobYr=parseInt(j.date.split('-')[0]);else if(j.createdAt&&j.createdAt.toDate)jobYr=j.createdAt.toDate().getFullYear();return jobYr===yr;}).reduce((s,j)=>s+(j.value||0),0);document.getElementById('ytd-disp').textContent=fmt(ytd);const activeVal=jobs.filter(j=>j.status==='active').reduce((s,j)=>s+(j.value||0),0);document.getElementById('active-disp').textContent=fmt(activeVal);}
 function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-'+s).classList.add('active');}
 function goTo(s,t){showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='block';navStack.push({s,t});if(s==='jobs')renderJobs();}
 function tabTo(el,s,t){document.querySelectorAll('.titem').forEach(x=>x.classList.remove('active'));el.classList.add('active');showScreen(s);document.getElementById('nav-title').textContent=t;document.getElementById('nav-back').style.display='none';navStack=[];if(s==='jobs')renderJobs();if(s==='tasks')renderTasks();}
@@ -561,6 +610,94 @@ function renderTasks(){
 db.collection("settings").doc("main").onSnapshot(doc=>{
   if(doc.exists){const d=doc.data();if(d.bankBalance!==undefined)document.getElementById('bank-disp').textContent=fmt(d.bankBalance);}
 });
+// Parse fractional inches like "6 1/2" or "5.75" or "6"
+function parseInches(str){
+  if(!str)return null;
+  str=String(str).trim();
+  if(!str)return null;
+  // Try simple decimal first
+  let n=parseFloat(str);
+  if(!isNaN(n)&&!str.includes('/'))return n;
+  // Try "X Y/Z" or "Y/Z"
+  const m=str.match(/^(?:(\d+)\s+)?(\d+)\/(\d+)$/);
+  if(m){const whole=parseInt(m[1]||'0');const num=parseInt(m[2]);const den=parseInt(m[3]);if(den>0)return whole+(num/den);}
+  return null;
+}
+function getBucketDiameter(){return 11.5;}
+function calcGallons(startIn,endIn,diamIn){
+  if(startIn===null||endIn===null)return null;
+  const depth=startIn-endIn;
+  if(depth<=0)return 0;
+  const r=diamIn/2;
+  const cubicIn=Math.PI*r*r*depth;
+  return cubicIn/231; // 231 cubic inches per gallon
+}
+function savePaintLog(){
+  const start=parseInches(document.getElementById('pl-start').value);
+  const end=parseInches(document.getElementById('pl-end').value);
+  if(start===null||end===null){alert('Please enter valid start and end depths.');return;}
+  const diam=getBucketDiameter();
+  const entry={
+    job:document.getElementById('pl-job').value.trim(),
+    date:document.getElementById('pl-date').value,
+    color:document.getElementById('pl-color').value,
+    startDepth:start,
+    endDepth:end,
+    startRaw:document.getElementById('pl-start').value,
+    endRaw:document.getElementById('pl-end').value,
+    diameter:diam,
+    stalls:parseInt(document.getElementById('pl-stalls').value)||0,
+    ada:parseInt(document.getElementById('pl-ada').value)||0,
+    arrows:parseInt(document.getElementById('pl-arrows').value)||0,
+    curb:parseInt(document.getElementById('pl-curb').value)||0,
+    notes:document.getElementById('pl-notes').value.trim(),
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  db.collection("paintlog").add(entry).then(()=>{
+    ['pl-job','pl-start','pl-end','pl-stalls','pl-ada','pl-arrows','pl-curb','pl-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('pl-date').value='';
+  });
+}
+function deletePaintLog(id){
+  if(!confirm('Delete this entry?'))return;
+  db.collection("paintlog").doc(id).delete();
+}
+function renderPaintLog(snap){
+  const el=document.getElementById('pl-history');
+  if(!el)return;
+  if(snap.empty){el.innerHTML='<div class="empty">No entries yet.</div>';return;}
+  const fmtd2=d=>{if(!d)return'';const[y,m,day]=d.split('-');const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mo[+m-1]+' '+parseInt(day);};
+  let html='';
+  snap.forEach(doc=>{
+    const e={id:doc.id,...doc.data()};
+    const gallons=calcGallons(e.startDepth,e.endDepth,e.diameter||11.5);
+    const totalItems=(e.stalls||0)+(e.ada||0)+(e.arrows||0)+(e.curb||0);
+    const items=[];
+    if(e.stalls)items.push(e.stalls+' stalls');
+    if(e.ada)items.push(e.ada+' ADA');
+    if(e.arrows)items.push(e.arrows+' arrows');
+    if(e.curb)items.push(e.curb+' ft curb');
+    html+='<div class="pl-entry color-'+e.color+'">';
+    html+='<div class="pl-entry-header"><div><div class="pl-entry-title">'+(e.job||'(no job)')+' &middot; '+e.color.charAt(0).toUpperCase()+e.color.slice(1)+'</div><div class="pl-entry-date">'+(e.date?fmtd2(e.date):'')+'</div></div><button class="pl-entry-del" onclick="deletePaintLog(\''+e.id+'\')">&#10005;</button></div>';
+    html+='<div class="pl-entry-body">';
+    html+='Bucket: '+(e.startRaw||e.startDepth)+'" &rarr; '+(e.endRaw||e.endDepth)+'" ('+(e.diameter||11.5)+'" diam)<br>';
+    if(items.length)html+='Painted: '+items.join(', ');
+    if(e.notes)html+='<br><em style="color:#888">'+e.notes+'</em>';
+    html+='</div>';
+    if(gallons!==null&&gallons>0){
+      html+='<div class="pl-entry-calc">';
+      html+='<div class="pl-calc-row"><span>Paint used</span><strong>'+gallons.toFixed(2)+' gal</strong></div>';
+      if(e.stalls>0)html+='<div class="pl-calc-row"><span>Per stall</span><strong>'+(gallons/e.stalls).toFixed(3)+' gal</strong></div>';
+      if(e.ada>0)html+='<div class="pl-calc-row"><span>Per ADA</span><strong>'+(gallons/e.ada).toFixed(3)+' gal</strong></div>';
+      if(e.arrows>0)html+='<div class="pl-calc-row"><span>Per arrow</span><strong>'+(gallons/e.arrows).toFixed(3)+' gal</strong></div>';
+      if(e.curb>0)html+='<div class="pl-calc-row"><span>Per ft curb</span><strong>'+(gallons/e.curb).toFixed(3)+' gal</strong></div>';
+      html+='</div>';
+    }
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+db.collection("paintlog").orderBy("createdAt","desc").onSnapshot(renderPaintLog);
 function calculateEstimate(){
   const items=['stalls','ada','arrows','curb','other'];
   let grand=0;
